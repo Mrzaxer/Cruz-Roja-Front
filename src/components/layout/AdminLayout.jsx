@@ -34,7 +34,7 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
               </div>
               <div className="logo-text">
                 <h1>CRUZ ROJA</h1>
-                <p>COSTARRICENSE - ADMIN</p>
+                <p>ADMIN</p>
               </div>
             </div>
 

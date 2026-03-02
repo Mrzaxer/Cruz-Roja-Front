@@ -47,7 +47,7 @@ export default function Login() {
       <header className="login-header">
         <div className="header-content">
           <div className="logo">
-            <span>✝</span>
+            <span></span>
           </div>
           <div className="titulo">
             <h1>CRUZ ROJA</h1>
@@ -118,7 +118,7 @@ export default function Login() {
         <div className="footer-content">
           <div className="footer-grid">
             <div className="footer-col">
-              <h4>Cruz Roja Costarricense</h4>
+              <h4>Cruz Roja</h4>
               <p>
                 Institución de servicio humanitario, dedicada a la prevención y atención de emergencias.
               </p>
@@ -135,7 +135,7 @@ export default function Login() {
             </div>
           </div>
           <div className="footer-bottom">
-            © 2026 Cruz Roja Costarricense - Todos los derechos reservados
+            © 2026 Cruz Roja - Todos los derechos reservados
           </div>
         </div>
       </footer>

@@ -29,7 +29,7 @@ export default function Layout({ children, titulo }) {
             <div className="flex items-center space-x-3">
               <span className="text-2xl">🚑</span>
               <div>
-                <h1 className="font-bold text-lg">Cruz Roja Costarricense</h1>
+                <h1 className="font-bold text-lg">Cruz Roja</h1>
                 <p className="text-xs text-red-100">Sistema de Control de Ambulancias</p>
               </div>
             </div>
