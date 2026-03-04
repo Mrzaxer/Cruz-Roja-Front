@@ -1,0 +1,408 @@
+/* ===== INICIO GUARDIA - CRUZ ROJA MEXICANA ===== */
+:root {
+  --rojo-mexicano: #b22222;
+  --rojo-oscuro: #8b0000;
+  --rojo-claro: #fee2e2;
+  --verde-exito: #10b981;
+  --verde-claro: #d1fae5;
+  --amarillo-advertencia: #f59e0b;
+  --gris-fondo: #f3f4f6;
+  --blanco: #ffffff;
+  --gris-100: #f9fafb;
+  --gris-200: #e5e7eb;
+  --gris-300: #d1d5db;
+  --gris-400: #9ca3af;
+  --gris-500: #6b7280;
+  --gris-600: #4b5563;
+  --gris-700: #374151;
+  --gris-800: #1f2937;
+  --sombra: 0 1px 3px rgba(0,0,0,0.1);
+  --sombra-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --sombra-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.inicio-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Banner de ambulancia */
+.ambulancia-banner {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra-lg);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.ambulancia-banner::before {
+  content: "🚑";
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 5rem;
+  opacity: 0.1;
+}
+
+.ambulancia-icono {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  backdrop-filter: blur(4px);
+}
+
+.ambulancia-info h2 {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.ambulancia-info p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.ambulancia-placa {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* Tarjeta de verificación */
+.verificacion-card {
+  background-color: var(--blanco);
+  border-radius: 20px;
+  box-shadow: var(--sombra-lg);
+  overflow: hidden;
+  border: 1px solid var(--gris-200);
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--gris-100), var(--blanco));
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid var(--gris-200);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.card-header-icon {
+  width: 48px;
+  height: 48px;
+  background-color: var(--rojo-claro);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.card-header-text h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  margin-bottom: 0.25rem;
+}
+
+.card-header-text p {
+  color: var(--gris-500);
+  font-size: 0.9rem;
+}
+
+/* Lista de equipo */
+.equipo-lista {
+  padding: 1.5rem 2rem;
+}
+
+.equipo-item {
+  background-color: var(--gris-100);
+  border: 2px solid var(--gris-200);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.equipo-item:hover {
+  border-color: var(--rojo-mexicano);
+  box-shadow: var(--sombra);
+}
+
+.equipo-item.completo {
+  background-color: var(--verde-claro);
+  border-color: var(--verde-exito);
+}
+
+.equipo-check {
+  width: 28px;
+  height: 28px;
+  margin-top: 0.25rem;
+  cursor: pointer;
+  accent-color: var(--rojo-mexicano);
+}
+
+.equipo-contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.equipo-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.equipo-nombre strong {
+  font-size: 1.1rem;
+  color: var(--gris-800);
+}
+
+.equipo-badge {
+  background-color: var(--rojo-claro);
+  color: var(--rojo-mexicano);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.equipo-descripcion {
+  font-size: 0.9rem;
+  color: var(--gris-600);
+  line-height: 1.5;
+}
+
+.equipo-observacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.observacion-icono {
+  color: var(--gris-400);
+  font-size: 1.2rem;
+}
+
+.equipo-observacion input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gris-200);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  background-color: var(--blanco);
+}
+
+.equipo-observacion input:focus {
+  outline: none;
+  border-color: var(--rojo-mexicano);
+  box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
+}
+
+.equipo-observacion input::placeholder {
+  color: var(--gris-400);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--gris-100);
+  border-radius: 16px;
+  border: 2px dashed var(--gris-300);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gris-700);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--gris-500);
+}
+
+/* Resumen de verificación */
+.resumen-verificacion {
+  background-color: var(--gris-100);
+  border-top: 2px solid var(--gris-200);
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.resumen-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  color: var(--gris-600);
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.stat-value.completo {
+  color: var(--verde-exito);
+}
+
+.stat-value.faltante {
+  color: var(--rojo-mexicano);
+}
+
+.btn-guardar {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 6px rgba(178, 34, 34, 0.3);
+}
+
+.btn-guardar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(178, 34, 34, 0.4);
+}
+
+.btn-guardar:active {
+  transform: translateY(0);
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-spinner {
+  text-align: center;
+}
+
+.loading-spinner span {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.loading-spinner p {
+  color: var(--gris-500);
+  font-size: 1rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ambulancia-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .ambulancia-placa {
+    margin-left: 0;
+  }
+  
+  .equipo-item {
+    flex-direction: column;
+  }
+  
+  .equipo-check {
+    align-self: flex-start;
+  }
+  
+  .resumen-verificacion {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .resumen-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-guardar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header {
+    padding: 1rem;
+  }
+  
+  .equipo-lista {
+    padding: 1rem;
+  }
+  
+  .resumen-verificacion {
+    padding: 1rem;
+  }
+  
+  .ambulancia-info h2 {
+    font-size: 1.3rem;
+  }
+}

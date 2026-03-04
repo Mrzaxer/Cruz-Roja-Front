@@ -1,0 +1,219 @@
+/* ===== PARAMEDICO LAYOUT - CRUZ ROJA MEXICANA ===== */
+:root {
+  --rojo-mexicano: #b22222;
+  --rojo-oscuro: #8b0000;
+  --rojo-claro: #fee2e2;
+  --gris-fondo: #f3f4f6;
+  --blanco: #ffffff;
+  --gris-100: #f9fafb;
+  --gris-200: #e5e7eb;
+  --gris-300: #d1d5db;
+  --gris-400: #9ca3af;
+  --gris-500: #6b7280;
+  --gris-600: #4b5563;
+  --gris-700: #374151;
+  --gris-800: #1f2937;
+  --sombra: 0 1px 3px rgba(0,0,0,0.1);
+  --sombra-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--gris-fondo);
+}
+
+.paramedico-layout-container {
+  min-height: 100vh;
+  background-color: var(--gris-fondo);
+  width: 100%;
+}
+
+/* Barra superior */
+.paramedico-top-bar {
+  background-color: var(--rojo-mexicano);
+  height: 4px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+}
+
+/* Header */
+.paramedico-header {
+  background-color: var(--blanco);
+  border-bottom: 1px solid var(--gris-200);
+  width: 100%;
+  margin-top: 4px;
+}
+
+.paramedico-header-content {
+  width: 100%;
+  padding: 1rem 2rem;
+}
+
+.paramedico-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Logo y título */
+.paramedico-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.paramedico-logo {
+  width: 48px;
+  height: 48px;
+  background-color: var(--rojo-mexicano);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.paramedico-logo span {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.paramedico-logo-text h1 {
+  color: var(--rojo-mexicano);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.paramedico-logo-text p {
+  color: var(--gris-500);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Área de usuario */
+.paramedico-user-area {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.paramedico-user-info {
+  text-align: right;
+}
+
+.paramedico-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  white-space: nowrap;
+}
+
+.paramedico-user-role {
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  text-align: right;
+}
+
+.paramedico-btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--rojo-claro);
+  border: none;
+  color: var(--rojo-mexicano);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.paramedico-btn-logout:hover {
+  background-color: #fecaca;
+}
+
+/* Título de página */
+.paramedico-page-title {
+  background-color: var(--blanco);
+  border-bottom: 1px solid var(--gris-200);
+  width: 100%;
+}
+
+.paramedico-title-content {
+  width: 100%;
+  padding: 1rem 2rem;
+}
+
+.paramedico-title-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gris-800);
+}
+
+/* Contenido principal */
+.paramedico-main {
+  width: 100%;
+  padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .paramedico-header-content {
+    padding: 1rem;
+  }
+  
+  .paramedico-title-content {
+    padding: 1rem;
+  }
+  
+  .paramedico-main {
+    padding: 1rem;
+  }
+  
+  .paramedico-header-top {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .paramedico-user-area {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .paramedico-logo-text h1,
+  .paramedico-logo-text p,
+  .paramedico-user-name,
+  .paramedico-user-role {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .paramedico-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .paramedico-logo span {
+    font-size: 1.25rem;
+  }
+  
+  .paramedico-logo-text h1 {
+    font-size: 1.25rem;
+  }
+}

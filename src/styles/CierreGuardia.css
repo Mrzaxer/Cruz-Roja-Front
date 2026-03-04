@@ -1,0 +1,565 @@
+/* ===== CIERRE GUARDIA - CRUZ ROJA MEXICANA ===== */
+:root {
+  --rojo-mexicano: #b22222;
+  --rojo-oscuro: #8b0000;
+  --rojo-claro: #fee2e2;
+  --verde-exito: #10b981;
+  --verde-claro: #d1fae5;
+  --amarillo-advertencia: #f59e0b;
+  --azul-info: #3b82f6;
+  --azul-claro: #dbeafe;
+  --gris-fondo: #f3f4f6;
+  --blanco: #ffffff;
+  --gris-100: #f9fafb;
+  --gris-200: #e5e7eb;
+  --gris-300: #d1d5db;
+  --gris-400: #9ca3af;
+  --gris-500: #6b7280;
+  --gris-600: #4b5563;
+  --gris-700: #374151;
+  --gris-800: #1f2937;
+  --sombra: 0 1px 3px rgba(0,0,0,0.1);
+  --sombra-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --sombra-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.cierre-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Banner de ambulancia */
+.cierre-banner {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra-lg);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cierre-banner::before {
+  content: "📋";
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 5rem;
+  opacity: 0.1;
+}
+
+.cierre-banner-icono {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  backdrop-filter: blur(4px);
+}
+
+.cierre-banner-info {
+  flex: 1;
+}
+
+.cierre-banner-info h2 {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.cierre-banner-info p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.cierre-banner-placa {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+}
+
+/* Navegación de categorías */
+.categorias-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background-color: var(--blanco);
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: var(--sombra);
+  border: 1px solid var(--gris-200);
+}
+
+.categorias-progreso {
+  flex: 1;
+  height: 8px;
+  background-color: var(--gris-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progreso-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.categorias-indicador {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gris-600);
+  font-size: 0.9rem;
+}
+
+.categoria-actual {
+  font-weight: 700;
+  color: var(--rojo-mexicano);
+  background-color: var(--rojo-claro);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+/* Tarjeta de categoría */
+.categoria-card {
+  background-color: var(--blanco);
+  border-radius: 20px;
+  box-shadow: var(--sombra-lg);
+  overflow: hidden;
+  border: 1px solid var(--gris-200);
+  margin-bottom: 2rem;
+}
+
+.categoria-header {
+  background: linear-gradient(135deg, var(--gris-100), var(--blanco));
+  padding: 1.5rem 2rem;
+  border-bottom: 2px solid var(--gris-200);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.categoria-header-icono {
+  width: 48px;
+  height: 48px;
+  background-color: var(--rojo-claro);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.categoria-header-texto h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  margin-bottom: 0.25rem;
+}
+
+.categoria-header-texto p {
+  color: var(--gris-500);
+  font-size: 0.9rem;
+}
+
+/* Lista de insumos */
+.insumos-lista {
+  padding: 1.5rem 2rem;
+}
+
+.insumo-item {
+  background-color: var(--gris-100);
+  border: 2px solid var(--gris-200);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.insumo-item:hover {
+  border-color: var(--rojo-mexicano);
+  box-shadow: var(--sombra);
+}
+
+.insumo-item.completo {
+  background-color: var(--verde-claro);
+  border-color: var(--verde-exito);
+}
+
+.insumo-item.faltante {
+  background-color: var(--rojo-claro);
+  border-color: var(--rojo-mexicano);
+}
+
+.insumo-item.excedente {
+  background-color: var(--azul-claro);
+  border-color: var(--azul-info);
+}
+
+.insumo-info {
+  flex: 2;
+}
+
+.insumo-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.insumo-nombre strong {
+  font-size: 1.1rem;
+  color: var(--gris-800);
+}
+
+.insumo-badge {
+  background-color: var(--gris-200);
+  color: var(--gris-700);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.insumo-descripcion {
+  font-size: 0.9rem;
+  color: var(--gris-600);
+  margin-bottom: 0.5rem;
+}
+
+.insumo-establecido {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gris-500);
+}
+
+.establecido-valor {
+  font-weight: 700;
+  color: var(--gris-700);
+  background-color: var(--blanco);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.insumo-cantidad {
+  flex: 1;
+  min-width: 150px;
+}
+
+.cantidad-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gris-200);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background-color: var(--blanco);
+}
+
+.cantidad-input:focus {
+  outline: none;
+  border-color: var(--rojo-mexicano);
+  box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
+}
+
+.cantidad-input::placeholder {
+  color: var(--gris-400);
+}
+
+.cantidad-input.completo {
+  border-color: var(--verde-exito);
+  background-color: var(--verde-claro);
+}
+
+.cantidad-input.faltante {
+  border-color: var(--rojo-mexicano);
+  background-color: var(--rojo-claro);
+}
+
+.cantidad-input.excedente {
+  border-color: var(--azul-info);
+  background-color: var(--azul-claro);
+}
+
+.insumo-estado {
+  min-width: 80px;
+  text-align: center;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.estado-badge.completo {
+  background-color: var(--verde-exito);
+  color: white;
+}
+
+.estado-badge.faltante {
+  background-color: var(--rojo-mexicano);
+  color: white;
+}
+
+.estado-badge.excedente {
+  background-color: var(--azul-info);
+  color: white;
+}
+
+.estado-badge.pendiente {
+  background-color: var(--gris-400);
+  color: white;
+}
+
+/* Observaciones generales */
+.observaciones-section {
+  background-color: var(--gris-100);
+  border-top: 2px solid var(--gris-200);
+  padding: 1.5rem 2rem;
+}
+
+.observaciones-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.observaciones-header span {
+  font-size: 1.5rem;
+}
+
+.observaciones-header h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gris-800);
+}
+
+.observaciones-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--gris-200);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s;
+  background-color: var(--blanco);
+}
+
+.observaciones-textarea:focus {
+  outline: none;
+  border-color: var(--rojo-mexicano);
+  box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
+}
+
+/* Acciones */
+.acciones-footer {
+  padding: 1.5rem 2rem;
+  background-color: var(--blanco);
+  border-top: 2px solid var(--gris-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resumen-stats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  color: var(--gris-600);
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.stat-value.completo {
+  color: var(--verde-exito);
+}
+
+.stat-value.faltante {
+  color: var(--rojo-mexicano);
+}
+
+.stat-value.excedente {
+  color: var(--azul-info);
+}
+
+.btn-siguiente, .btn-finalizar {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 6px rgba(178, 34, 34, 0.3);
+}
+
+.btn-siguiente:hover:not(:disabled),
+.btn-finalizar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(178, 34, 34, 0.4);
+}
+
+.btn-siguiente:active,
+.btn-finalizar:active {
+  transform: translateY(0);
+}
+
+.btn-siguiente:disabled,
+.btn-finalizar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-spinner {
+  text-align: center;
+}
+
+.loading-spinner span {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.loading-spinner p {
+  color: var(--gris-500);
+  font-size: 1rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cierre-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .cierre-banner-placa {
+    margin-top: 0.5rem;
+  }
+  
+  .insumo-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .insumo-info {
+    width: 100%;
+  }
+  
+  .insumo-cantidad {
+    width: 100%;
+  }
+  
+  .insumo-estado {
+    width: 100%;
+    text-align: left;
+  }
+  
+  .acciones-footer {
+    flex-direction: column;
+  }
+  
+  .resumen-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-siguiente, .btn-finalizar {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .categorias-nav {
+    flex-direction: column;
+  }
+  
+  .categorias-progreso {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .categoria-header {
+    padding: 1rem;
+  }
+  
+  .insumos-lista {
+    padding: 1rem;
+  }
+  
+  .observaciones-section {
+    padding: 1rem;
+  }
+  
+  .acciones-footer {
+    padding: 1rem;
+  }
+  
+  .cierre-banner-info h2 {
+    font-size: 1.3rem;
+  }
+}

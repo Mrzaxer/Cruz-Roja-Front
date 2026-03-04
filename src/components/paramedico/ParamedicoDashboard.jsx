@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../supabase'
-import Layout from '../layout/Layout'
-import Card from '../ui/Card'
-import Button from '../ui/Button'
+import ParamedicoLayout from '../layout/ParamedicoLayout' // Cambiamos a ParamedicoLayout
+import '../../styles/ParamedicoDashboard.css'
 
 export default function ParamedicoDashboard() {
   const { user } = useAuth()
@@ -41,42 +40,91 @@ export default function ParamedicoDashboard() {
   }
 
   return (
-    <Layout titulo="Panel Paramédico">
-
-      {fase === 'seleccion' && (
-        <Card title="🚑 Selecciona una ambulancia">
-          <div style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
-            {ambulancias.map(amb => (
-              <div
-                key={amb.id}
-                onClick={() => setAmbulanciaSeleccionada(amb)}
-                style={{
-                  minWidth: 150,
-                  border: '1px solid #ccc',
-                  cursor: 'pointer'
-                }}
-              >
-                {amb.codigo}
-              </div>
-            ))}
+    <ParamedicoLayout titulo="Panel Paramédico">
+      <div className="paramedico-container">
+        
+        {/* Banner superior */}
+        <div className="paramedico-banner">
+          <div className="banner-content">
+            <h2>Cruz Roja Mexicana</h2>
+            <p>Sistema de Gestión de Ambulancias</p>
           </div>
+        </div>
 
-          <Button
-            onClick={() => setFase('menu')}
-            disabled={!ambulanciaSeleccionada}
-          >
-            Aceptar
-          </Button>
-        </Card>
-      )}
+        {fase === 'seleccion' && (
+          <div className="paramedico-card">
+            <h3>🚑 Selecciona una ambulancia</h3>
+            
+            {ambulancias.length === 0 ? (
+              <div className="empty-state">
+                <span className="empty-icon">🚑</span>
+                <p>No hay ambulancias activas disponibles</p>
+              </div>
+            ) : (
+              <>
+                <div className="ambulancias-grid">
+                  {ambulancias.map(amb => (
+                    <div
+                      key={amb.id}
+                      onClick={() => setAmbulanciaSeleccionada(amb)}
+                      className={`ambulancia-item ${ambulanciaSeleccionada?.id === amb.id ? 'selected' : ''}`}
+                    >
+                      <div className="ambulancia-icon">🚑</div>
+                      <div className="ambulancia-info">
+                        <span className="codigo">{amb.codigo}</span>
+                        <span className="placa">{amb.placa || 'Sin placa'}</span>
+                      </div>
+                      {ambulanciaSeleccionada?.id === amb.id && (
+                        <div className="check">✓</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
 
-      {fase === 'menu' && (
-        <Card title={`🚑 ${ambulanciaSeleccionada.codigo}`}>
-          <Button onClick={irAEquipo}>🧰Equipo</Button>
-          <Button onClick={irAInsumos}>📦Insumos</Button>
-        </Card>
-      )}
+                <div className="action-footer">
+                  <button
+                    onClick={() => setFase('menu')}
+                    disabled={!ambulanciaSeleccionada}
+                    className="btn-aceptar"
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-    </Layout>
+        {fase === 'menu' && (
+          <div className="paramedico-card">
+            <h3>🚑 Ambulancia {ambulanciaSeleccionada?.codigo}</h3>
+            
+            <div className="menu-grid">
+              <div className="menu-item" onClick={irAEquipo}>
+                <div className="menu-icon">🧰</div>
+                <h3>Equipo Médico</h3>
+                <p>Verificar equipo y herramientas</p>
+                <div className="menu-arrow">→</div>
+              </div>
+
+              <div className="menu-item" onClick={irAInsumos}>
+                <div className="menu-icon">📦</div>
+                <h3>Insumos</h3>
+                <p>Revisar inventario de insumos</p>
+                <div className="menu-arrow">→</div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setFase('seleccion')} 
+              className="btn-cambiar"
+            >
+              Cambiar ambulancia
+            </button>
+          </div>
+        )}
+
+      </div>
+    </ParamedicoLayout>
   )
 }

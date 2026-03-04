@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLocation, Navigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
-import Layout from '../layout/Layout'
-import Card from '../ui/Card'
-import Button from '../ui/Button'
+import ParamedicoLayout from '../layout/ParamedicoLayout'
+import '../../styles/InicioGuardia.css'
 
 export default function InicioGuardia() {
   const { state } = useLocation()
@@ -80,94 +79,145 @@ export default function InicioGuardia() {
       }
     })
 
-    let mensaje = '🚑 Inicio de Guardia\n\n'
+    // Aquí iría la lógica para guardar en la base de datos
+    console.log('Guardando inicio de guardia:', {
+      ambulancia: ambulancia.codigo,
+      completos,
+      faltantes
+    })
 
-    mensaje += '✅ EQUIPO COMPLETO:\n'
-    if (completos.length === 0) {
-      mensaje += 'Ninguno\n'
-    } else {
-      completos.forEach(item => {
-        mensaje += `- ${item.nombre} (${item.observacion})\n`
-      })
-    }
+    // Mostrar resumen
+    const totalCompletos = completos.length
+    const totalFaltantes = faltantes.length
+    const porcentaje = Math.round((totalCompletos / insumos.length) * 100)
 
-    mensaje += '\n❌ EQUIPO FALTANTE:\n'
-    if (faltantes.length === 0) {
-      mensaje += 'Ninguno\n'
-    } else {
-      faltantes.forEach(item => {
-        mensaje += `- ${item.nombre} (${item.observacion})\n`
-      })
-    }
-
-    alert(mensaje)
-
-    console.log('Completos:', completos)
-    console.log('Faltantes:', faltantes)
+    alert(`✅ Inicio de Guardia Registrado\n\n` +
+          `Ambulancia: ${ambulancia.codigo}\n` +
+          `Completos: ${totalCompletos}\n` +
+          `Faltantes: ${totalFaltantes}\n` +
+          `Progreso: ${porcentaje}%`)
   }
 
   if (cargando) {
     return (
-      <Layout titulo="Inicio de Guardia">
-        <p>Cargando equipo médico...</p>
-      </Layout>
+      <ParamedicoLayout titulo="Inicio de Guardia">
+        <div className="loading-container">
+          <div className="loading-spinner">
+            <span>⛑️</span>
+            <p>Cargando equipo médico...</p>
+          </div>
+        </div>
+      </ParamedicoLayout>
     )
   }
 
+  const completos = Object.values(equipoEstado).filter(e => e?.presente).length
+  const total = insumos.length
+  const porcentaje = total > 0 ? Math.round((completos / total) * 100) : 0
+
   return (
-    <Layout titulo="Inicio de Guardia">
-      <Card className="mb-4">
-        <p><strong>Ambulancia:</strong> {ambulancia.codigo}</p>
-      </Card>
-
-      <Card title="🧰 Verificación de Equipo Médico">
-
-        {insumos.length === 0 && (
-          <p>No hay equipo médico configurado</p>
-        )}
-
-        {insumos.map(insumo => (
-          <div
-            key={insumo.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              marginBottom: '10px'
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={equipoEstado[insumo.id]?.presente || false}
-              onChange={() => toggleCheck(insumo.id)}
-            />
-
-            <div style={{ minWidth: '150px' }}>
-              <strong>{insumo.nombre}</strong>
-              {insumo.descripcion && (
-                <p style={{ fontSize: '12px', color: '#666' }}>
-                  {insumo.descripcion}
-                </p>
-              )}
-            </div>
-
-            <input
-              type="text"
-              placeholder="Observaciones (opcional)"
-              value={equipoEstado[insumo.id]?.observacion || ''}
-              onChange={(e) =>
-                cambiarObservacion(insumo.id, e.target.value)
-              }
-              style={{ flex: 1 }}
-            />
+    <ParamedicoLayout titulo="Inicio de Guardia">
+      <div className="inicio-container">
+        
+        {/* Banner de ambulancia */}
+        <div className="ambulancia-banner">
+          <div className="ambulancia-icono">🚑</div>
+          <div className="ambulancia-info">
+            <h2>Ambulancia {ambulancia.codigo}</h2>
+            <p>Inicio de guardia - Verificación de equipo</p>
           </div>
-        ))}
+          {ambulancia.placa && (
+            <div className="ambulancia-placa">
+              Placa: {ambulancia.placa}
+            </div>
+          )}
+        </div>
 
-        <Button onClick={guardarInicio} className="mt-4">
-          Guardar inicio de guardia
-        </Button>
+        {/* Tarjeta de verificación */}
+        <div className="verificacion-card">
+          <div className="card-header">
+            <div className="card-header-icon">🧰</div>
+            <div className="card-header-text">
+              <h3>Verificación de Equipo Médico</h3>
+              <p>Revisa que todo el equipo esté en su lugar</p>
+            </div>
+          </div>
 
-      </Card>
-    </Layout>
+          <div className="equipo-lista">
+            {insumos.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">📦</div>
+                <h4>No hay equipo configurado</h4>
+                <p>Contacta al administrador para configurar el equipo médico</p>
+              </div>
+            ) : (
+              insumos.map(insumo => (
+                <div
+                  key={insumo.id}
+                  className={`equipo-item ${equipoEstado[insumo.id]?.presente ? 'completo' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={equipoEstado[insumo.id]?.presente || false}
+                    onChange={() => toggleCheck(insumo.id)}
+                    className="equipo-check"
+                  />
+                  
+                  <div className="equipo-contenido">
+                    <div className="equipo-nombre">
+                      <strong>{insumo.nombre}</strong>
+                      {equipoEstado[insumo.id]?.presente && (
+                        <span className="equipo-badge">✓ Verificado</span>
+                      )}
+                    </div>
+                    
+                    {insumo.descripcion && (
+                      <div className="equipo-descripcion">
+                        {insumo.descripcion}
+                      </div>
+                    )}
+                    
+                    <div className="equipo-observacion">
+                      <span className="observacion-icono">📝</span>
+                      <input
+                        type="text"
+                        placeholder="Observaciones (opcional)"
+                        value={equipoEstado[insumo.id]?.observacion || ''}
+                        onChange={(e) => cambiarObservacion(insumo.id, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {insumos.length > 0 && (
+            <div className="resumen-verificacion">
+              <div className="resumen-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Completos:</span>
+                  <span className="stat-value completo">{completos}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Faltantes:</span>
+                  <span className="stat-value faltante">{total - completos}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Progreso:</span>
+                  <span className="stat-value">{porcentaje}%</span>
+                </div>
+              </div>
+
+              <button onClick={guardarInicio} className="btn-guardar">
+                <span>✅</span>
+                Guardar inicio de guardia
+              </button>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </ParamedicoLayout>
   )
 }

@@ -110,6 +110,7 @@ export default function Login() {
           <div className="credenciales-prueba">
             <p>Credenciales de prueba:</p>
             <p>admin@cruzroja.cr / admin123</p>
+            <p>efrain@cruzroja.mx / 123</p>
           </div>
         </div>
       </div>

@@ -1,0 +1,265 @@
+/* ===== PARAMEDICO DASHBOARD ===== */
+.paramedico-container {
+  width: 100%;
+}
+
+/* Banner superior */
+.paramedico-banner {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  width: 100%;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--sombra-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.paramedico-banner::before {
+  content: "🇲🇽";
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 4rem;
+  opacity: 0.1;
+}
+
+.banner-content h2 {
+  color: var(--blanco);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.banner-content p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+/* Cards */
+.paramedico-card {
+  background-color: var(--blanco);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--rojo-mexicano);
+  width: 100%;
+}
+
+.paramedico-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Grid de ambulancias */
+.ambulancias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.ambulancia-item {
+  background-color: var(--blanco);
+  border: 2px solid var(--gris-200);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ambulancia-item:hover {
+  border-color: var(--rojo-mexicano);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-lg);
+}
+
+.ambulancia-item.selected {
+  border-color: var(--rojo-mexicano);
+  background-color: var(--rojo-claro);
+}
+
+.ambulancia-icon {
+  width: 48px;
+  height: 48px;
+  background-color: var(--rojo-claro);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.ambulancia-info {
+  flex: 1;
+}
+
+.ambulancia-info .codigo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.ambulancia-info .placa {
+  font-size: 0.875rem;
+  color: var(--gris-500);
+}
+
+.check {
+  width: 24px;
+  height: 24px;
+  background-color: var(--rojo-mexicano);
+  color: var(--blanco);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+}
+
+/* Action footer */
+.action-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--gris-200);
+  padding-top: 1.5rem;
+}
+
+.btn-aceptar {
+  background-color: var(--rojo-mexicano);
+  color: var(--blanco);
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 200px;
+}
+
+.btn-aceptar:hover:not(:disabled) {
+  background-color: var(--rojo-oscuro);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-lg);
+}
+
+.btn-aceptar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Grid de menú */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.menu-item {
+  background: linear-gradient(135deg, var(--blanco), var(--gris-100));
+  border: 2px solid var(--gris-200);
+  border-radius: 12px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.menu-item:hover {
+  border-color: var(--rojo-mexicano);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-lg);
+}
+
+.menu-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.menu-item h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  margin-bottom: 0.5rem;
+}
+
+.menu-item p {
+  color: var(--gris-500);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.menu-arrow {
+  color: var(--rojo-mexicano);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.menu-item:hover .menu-arrow {
+  transform: translateX(5px);
+}
+
+.btn-cambiar {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: transparent;
+  border: 2px solid var(--rojo-mexicano);
+  color: var(--rojo-mexicano);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 1rem;
+}
+
+.btn-cambiar:hover {
+  background-color: var(--rojo-mexicano);
+  color: var(--blanco);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn-aceptar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .paramedico-banner {
+    padding: 1.5rem;
+  }
+  
+  .banner-content h2 {
+    font-size: 1.25rem;
+  }
+  
+  .ambulancias-grid {
+    grid-template-columns: 1fr;
+  }
+}
