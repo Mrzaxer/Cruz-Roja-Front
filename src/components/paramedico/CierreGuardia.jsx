@@ -54,20 +54,22 @@ export default function CierreGuardia() {
     setCargando(false)
   }
 
+  // 🔥 CORREGIDO: guarda como número y permite 0
   const cambiarCantidad = (id, valor) => {
     setCantidades(prev => ({
       ...prev,
-      [id]: valor
+      [id]: valor === '' ? '' : Number(valor)
     }))
   }
 
   const obtenerEstadoInsumo = (insumo) => {
-    const cantidad = parseInt(cantidades[insumo.id] || 0)
-    const establecida = insumo.cantidad_establecida || 0
-    
+    const cantidad = cantidades[insumo.id] ?? 0
+    const establecida = insumo.cantidad_establecida ?? 0
+
+    if (cantidad === '') return 'pendiente'
     if (cantidad < establecida) return 'faltante'
     if (cantidad > establecida) return 'excedente'
-    if (cantidad === establecida && cantidad > 0) return 'completo'
+    if (cantidad === establecida) return 'completo'
     return 'pendiente'
   }
 
@@ -118,8 +120,8 @@ export default function CierreGuardia() {
     }
 
     insumos.forEach(insumo => {
-      const cantidadReal = parseInt(cantidades[insumo.id] || 0)
-      const cantidadEstablecida = insumo.cantidad_establecida || 0
+      const cantidadReal = cantidades[insumo.id] ?? 0
+      const cantidadEstablecida = insumo.cantidad_establecida ?? 0
       const estado = obtenerEstadoInsumo(insumo)
 
       const item = {
@@ -135,13 +137,12 @@ export default function CierreGuardia() {
 
     console.log('Cierre de guardia:', resumen)
 
-    // Aquí iría la lógica para guardar en la base de datos
-
-    const mensaje = `✅ Cierre de Guardia Completado\n\n` +
-                    `Ambulancia: ${ambulancia.codigo}\n` +
-                    `Completos: ${resumen.completos.length}\n` +
-                    `Faltantes: ${resumen.faltantes.length}\n` +
-                    `Excedentes: ${resumen.excedentes.length}`
+    const mensaje =
+      `✅ Cierre de Guardia Completado\n\n` +
+      `Ambulancia: ${ambulancia.codigo}\n` +
+      `Completos: ${resumen.completos.length}\n` +
+      `Faltantes: ${resumen.faltantes.length}\n` +
+      `Excedentes: ${resumen.excedentes.length}`
 
     alert(mensaje)
   }
@@ -164,8 +165,7 @@ export default function CierreGuardia() {
   return (
     <ParamedicoLayout titulo="Cierre de Guardia">
       <div className="cierre-container">
-        
-        {/* Banner de ambulancia */}
+
         <div className="cierre-banner">
           <div className="cierre-banner-icono">📋</div>
           <div className="cierre-banner-info">
@@ -179,134 +179,40 @@ export default function CierreGuardia() {
           )}
         </div>
 
-        {/* Barra de progreso */}
-        <div className="categorias-nav">
-          <div className="categorias-progreso">
-            <div className="progreso-bar" style={{ width: `${progreso}%` }}></div>
-          </div>
-          <div className="categorias-indicador">
-            <span>Categoría</span>
-            <span className="categoria-actual">{categoriaIndex + 1}/{categorias.length}</span>
-          </div>
-        </div>
-
-        {/* Tarjeta de categoría */}
         <div className="categoria-card">
-          <div className="categoria-header">
-            <div className="categoria-header-icono">📦</div>
-            <div className="categoria-header-texto">
-              <h3>{categoriaActual}</h3>
-              <p>Registra las cantidades reales de cada insumo</p>
-            </div>
-          </div>
+          <h3>{categoriaActual}</h3>
 
           <div className="insumos-lista">
-            {insumos.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">📦</div>
-                <h4>No hay insumos en esta categoría</h4>
-                <p>Continúa con la siguiente categoría</p>
-              </div>
-            ) : (
-              insumos.map(insumo => {
-                const estado = obtenerEstadoInsumo(insumo)
-                return (
-                  <div
-                    key={insumo.id}
-                    className={`insumo-item ${estado !== 'pendiente' ? estado : ''}`}
-                  >
-                    <div className="insumo-info">
-                      <div className="insumo-nombre">
-                        <strong>{insumo.nombre}</strong>
-                        {estado !== 'pendiente' && (
-                          <span className={`insumo-badge ${estado}`}>
-                            {estado === 'completo' && '✓ Completo'}
-                            {estado === 'faltante' && '⚠️ Faltante'}
-                            {estado === 'excedente' && '📈 Excedente'}
-                          </span>
-                        )}
-                      </div>
-                      
-                      {insumo.descripcion && (
-                        <div className="insumo-descripcion">
-                          {insumo.descripcion}
-                        </div>
-                      )}
-                      
-                      <div className="insumo-establecido">
-                        <span>Cantidad establecida:</span>
-                        <span className="establecido-valor">
-                          {insumo.cantidad_establecida}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="insumo-cantidad">
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="Cantidad real"
-                        value={cantidades[insumo.id] || ''}
-                        onChange={(e) => cambiarCantidad(insumo.id, e.target.value)}
-                        className={`cantidad-input ${estado !== 'pendiente' ? estado : ''}`}
-                      />
-                    </div>
-
-                    <div className="insumo-estado">
-                      {cantidades[insumo.id] && (
-                        <span className={`estado-badge ${estado}`}>
-                          {estado === 'completo' && 'Completo'}
-                          {estado === 'faltante' && 'Faltante'}
-                          {estado === 'excedente' && 'Excedente'}
-                        </span>
-                      )}
-                    </div>
+            {insumos.map(insumo => {
+              const estado = obtenerEstadoInsumo(insumo)
+              return (
+                <div key={insumo.id} className={`insumo-item ${estado}`}>
+                  <div className="insumo-info">
+                    <strong>{insumo.nombre}</strong>
+                    <p>Cantidad establecida: {insumo.cantidad_establecida}</p>
                   </div>
-                )
-              })
-            )}
+
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Cantidad real"
+                    value={cantidades[insumo.id] ?? ''}
+                    onChange={(e) => cambiarCantidad(insumo.id, e.target.value)}
+                    className={`cantidad-input ${estado}`}
+                  />
+                </div>
+              )
+            })}
           </div>
 
-          {esUltimaCategoria && (
-            <div className="observaciones-section">
-              <div className="observaciones-header">
-                <span>📝</span>
-                <h4>Observaciones Generales</h4>
-              </div>
-              <textarea
-                value={observacionesFinales}
-                onChange={(e) => setObservacionesFinales(e.target.value)}
-                rows="4"
-                className="observaciones-textarea"
-                placeholder="Ingresa cualquier observación adicional sobre el turno o los insumos..."
-              />
-            </div>
-          )}
-
           <div className="acciones-footer">
-            <div className="resumen-stats">
-              <div className="stat-item">
-                <span className="stat-label">Completos:</span>
-                <span className="stat-value completo">{resumen.completos}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Faltantes:</span>
-                <span className="stat-value faltante">{resumen.faltantes}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Excedentes:</span>
-                <span className="stat-value excedente">{resumen.excedentes}</span>
-              </div>
-            </div>
-
             {!esUltimaCategoria ? (
               <button
                 onClick={siguienteCategoria}
                 disabled={!categoriaCompleta()}
                 className="btn-siguiente"
               >
-                <span>Siguiente Categoría</span>
-                <span>→</span>
+                Siguiente →
               </button>
             ) : (
               <button
@@ -314,8 +220,7 @@ export default function CierreGuardia() {
                 disabled={!categoriaCompleta()}
                 className="btn-finalizar"
               >
-                <span>✅</span>
-                <span>Finalizar Cierre</span>
+                ✅ Finalizar Cierre
               </button>
             )}
           </div>
