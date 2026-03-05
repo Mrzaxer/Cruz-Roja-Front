@@ -1,0 +1,455 @@
+/* ===== GESTIÓN DE INSUMOS - CRUZ ROJA MEXICANA ===== */
+:root {
+  --rojo-principal: #b22222;
+  --rojo-oscuro: #8b0000;
+  --rojo-claro: #fee2e2;
+  --azul-claro: #dbeafe;
+  --verde-claro: #dcfce7;
+  --verde-exito: #10b981;
+  --amarillo-claro: #fef9c3;
+  --morado-claro: #f3e8ff;
+  --gris-fondo: #f3f4f6;
+  --blanco: #ffffff;
+  --gris-100: #f9fafb;
+  --gris-200: #e5e7eb;
+  --gris-300: #d1d5db;
+  --gris-400: #9ca3af;
+  --gris-500: #6b7280;
+  --gris-600: #4b5563;
+  --gris-700: #374151;
+  --gris-800: #1f2937;
+  --sombra: 0 1px 3px rgba(0,0,0,0.1);
+  --sombra-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.insumos-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Banner de insumos */
+.insumos-banner {
+  background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra-lg);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.insumos-banner::before {
+  content: "💊";
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 4rem;
+  opacity: 0.1;
+}
+
+.insumos-banner-icon {
+  width: 48px;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  backdrop-filter: blur(4px);
+}
+
+.insumos-banner-text h2 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.insumos-banner-text p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+/* Grid de dos columnas */
+.insumos-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .insumos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tarjeta de creación */
+.insumos-card {
+  background-color: var(--blanco);
+  border-radius: 16px;
+  box-shadow: var(--sombra-lg);
+  overflow: hidden;
+  border: 1px solid var(--gris-200);
+  height: fit-content;
+}
+
+.insumos-card-header {
+  background: linear-gradient(135deg, var(--gris-100), var(--blanco));
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid var(--gris-200);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.insumos-card-header span {
+  font-size: 1.5rem;
+}
+
+.insumos-card-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gris-800);
+}
+
+.insumos-card-body {
+  padding: 1.5rem;
+}
+
+/* Formulario */
+.insumos-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gris-700);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gris-200);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  background-color: var(--blanco);
+  width: 100%;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--rojo-principal);
+  box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--gris-400);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Botón de creación */
+.btn-crear {
+  background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 6px rgba(178, 34, 34, 0.3);
+}
+
+.btn-crear:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(178, 34, 34, 0.4);
+}
+
+.btn-crear:active {
+  transform: translateY(0);
+}
+
+.btn-crear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Lista de insumos */
+.insumos-list-card {
+  background-color: var(--blanco);
+  border-radius: 16px;
+  box-shadow: var(--sombra-lg);
+  overflow: hidden;
+  border: 1px solid var(--gris-200);
+}
+
+.insumos-list-header {
+  background: linear-gradient(135deg, var(--gris-100), var(--blanco));
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid var(--gris-200);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.insumos-list-header span {
+  font-size: 1.5rem;
+}
+
+.insumos-list-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gris-800);
+}
+
+.insumos-list-body {
+  padding: 1.5rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Items de insumos */
+.insumo-item {
+  background-color: var(--gris-100);
+  border: 2px solid var(--gris-200);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.insumo-item:hover {
+  border-color: var(--rojo-principal);
+  box-shadow: var(--sombra);
+}
+
+.insumo-item.inactivo {
+  opacity: 0.7;
+  background-color: var(--gris-200);
+}
+
+.insumo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.insumo-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.insumo-nombre strong {
+  font-size: 1.1rem;
+  color: var(--gris-800);
+}
+
+.insumo-badge {
+  background-color: var(--rojo-claro);
+  color: var(--rojo-principal);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.insumo-badge.obligatorio {
+  background-color: var(--rojo-claro);
+  color: var(--rojo-principal);
+}
+
+.insumo-badge.opcional {
+  background-color: var(--gris-300);
+  color: var(--gris-700);
+}
+
+.insumo-descripcion {
+  font-size: 0.95rem;
+  color: var(--gris-600);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  padding-left: 2rem;
+}
+
+.insumo-detalles {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+  flex-wrap: wrap;
+}
+
+.insumo-detalle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gris-600);
+}
+
+.insumo-detalle span {
+  font-weight: 600;
+  color: var(--gris-800);
+  background-color: var(--blanco);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--gris-200);
+}
+
+.insumo-acciones {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 2rem;
+}
+
+.btn-toggle {
+  background-color: transparent;
+  border: 2px solid var(--rojo-principal);
+  color: var(--rojo-principal);
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-toggle:hover {
+  background-color: var(--rojo-principal);
+  color: white;
+}
+
+.btn-toggle.activar {
+  border-color: var(--verde-exito);
+  color: var(--verde-exito);
+}
+
+.btn-toggle.activar:hover {
+  background-color: var(--verde-exito);
+  color: white;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--gris-500);
+  background-color: var(--gris-100);
+  border-radius: 12px;
+  border: 2px dashed var(--gris-300);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  text-align: center;
+}
+
+.loading-spinner span {
+  font-size: 2rem;
+  animation: spin 1s linear infinite;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .insumos-banner {
+    padding: 1.25rem;
+  }
+  
+  .insumos-banner-text h2 {
+    font-size: 1.25rem;
+  }
+  
+  .insumos-card-body,
+  .insumos-list-body {
+    padding: 1rem;
+  }
+  
+  .insumo-detalles {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .insumo-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .insumos-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .insumo-nombre {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

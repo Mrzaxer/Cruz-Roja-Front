@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
-import Layout from '../layout/Layout'
-import Card from '../ui/Card'
-import Button from '../ui/Button'
+import AdminLayout from '../layout/AdminLayout'
+import '../../styles/GestionInsumos.css'
 
 export default function GestionInsumos() {
 
@@ -78,111 +77,175 @@ export default function GestionInsumos() {
   }
 
   return (
-    <Layout titulo="Gestión de Insumos">
-
-      {/* CREAR INSUMO */}
-      <Card title="➕ Nuevo Insumo" className="mb-6">
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-          <input
-            placeholder="Nombre"
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-          />
-
-          <input
-            placeholder="Descripción"
-            value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-          />
-
-          {/* CATEGORIA */}
-          <select
-            value={categoria}
-            onChange={e => setCategoria(e.target.value)}
-          >
-            <option value="Equipo Médico">Equipo Médico</option>
-            <option value="Manejo de Vía Aérea">Manejo de Vía Aérea</option>
-            <option value="Manejo Intravenoso e Intramuscular">Manejo Intravenoso e Intramuscular</option>
-            <option value="Soluciones">Soluciones</option>
-            <option value="Curaciones y Varios">Curaciones y Varios</option>
-            <option value="Limpieza y Desinfección">Limpieza y Desinfección</option>
-            <option value="Medicamentos">Medicamentos</option>
-          </select>
-
-          {/* CANTIDAD ESTABLECIDA */}
-          <input
-            type="number"
-            placeholder="Cantidad establecida"
-            value={cantidad}
-            onChange={e => setCantidad(Number(e.target.value))}
-          />
-
-          {/* OBLIGATORIO GLOBAL */}
-          <select
-            value={obligatorioGlobal}
-            onChange={e => setObligatorioGlobal(e.target.value === 'true')}
-          >
-            <option value="true">Obligatorio</option>
-            <option value="false">No obligatorio</option>
-          </select>
-
-          <Button onClick={crearInsumo} disabled={cargando}>
-            Crear
-          </Button>
-
+    <AdminLayout 
+      titulo="Gestión de Insumos"
+      subtitulo="Administra el catálogo global de insumos"
+    >
+      <div className="insumos-container">
+        
+        {/* Banner */}
+        <div className="insumos-banner">
+          <div className="insumos-banner-icon">💊</div>
+          <div className="insumos-banner-text">
+            <h2>Catálogo de Insumos</h2>
+            <p>Gestiona los insumos médicos y equipos disponibles</p>
+          </div>
         </div>
 
-      </Card>
+        {/* Grid de dos columnas */}
+        <div className="insumos-grid">
+          
+          {/* Columna izquierda - Formulario de creación */}
+          <div className="insumos-card">
+            <div className="insumos-card-header">
+              <span>➕</span>
+              <h3>Nuevo Insumo</h3>
+            </div>
+            
+            <div className="insumos-card-body">
+              <div className="insumos-form">
+                
+                <div className="form-group">
+                  <label>Nombre del insumo *</label>
+                  <input
+                    placeholder="Ej: Guantes estériles"
+                    value={nombre}
+                    onChange={e => setNombre(e.target.value)}
+                  />
+                </div>
 
-      {/* LISTA DE INSUMOS */}
-      <Card title="📋 Lista de Insumos">
+                <div className="form-group">
+                  <label>Descripción</label>
+                  <input
+                    placeholder="Descripción del insumo"
+                    value={descripcion}
+                    onChange={e => setDescripcion(e.target.value)}
+                  />
+                </div>
 
-        {insumos.map(insumo => (
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Categoría</label>
+                    <select
+                      value={categoria}
+                      onChange={e => setCategoria(e.target.value)}
+                    >
+                      <option value="Equipo Médico">Equipo Médico</option>
+                      <option value="Manejo de Vía Aérea">Manejo de Vía Aérea</option>
+                      <option value="Manejo Intravenoso e Intramuscular">Manejo Intravenoso</option>
+                      <option value="Soluciones">Soluciones</option>
+                      <option value="Curaciones y Varios">Curaciones y Varios</option>
+                      <option value="Limpieza y Desinfección">Limpieza</option>
+                      <option value="Medicamentos">Medicamentos</option>
+                    </select>
+                  </div>
 
-          <div
-            key={insumo.id}
-            style={{
-              borderBottom: '1px solid #ddd',
-              padding: '10px 0'
-            }}
-          >
+                  <div className="form-group">
+                    <label>Cantidad establecida</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={cantidad}
+                      onChange={e => setCantidad(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
 
-            <strong>{insumo.nombre}</strong>
+                <div className="form-group">
+                  <label>Tipo</label>
+                  <select
+                    value={obligatorioGlobal}
+                    onChange={e => setObligatorioGlobal(e.target.value === 'true')}
+                  >
+                    <option value="true">🔴 Obligatorio en todas las sedes</option>
+                    <option value="false">⚪ Opcional por sede</option>
+                  </select>
+                </div>
 
-            <p style={{ fontSize: 12 }}>
-              {insumo.descripcion}
-            </p>
+                <button 
+                  onClick={crearInsumo} 
+                  disabled={cargando}
+                  className="btn-crear"
+                >
+                  {cargando ? (
+                    <>
+                      <span className="loading-spinner-small">⏳</span>
+                      Creando...
+                    </>
+                  ) : (
+                    <>
+                      <span>➕</span>
+                      Crear Insumo
+                    </>
+                  )}
+                </button>
 
-            <p style={{ fontSize: 12 }}>
-              Categoría: {insumo.categoria}
-            </p>
-
-            <p style={{ fontSize: 12 }}>
-              Cantidad establecida: {insumo.cantidad_establecida}
-            </p>
-
-            <p style={{ fontSize: 12 }}>
-              Obligatorio: {insumo.obligatorio_global ? 'Sí' : 'No'}
-            </p>
-
-            <Button
-              onClick={() => toggleActivo(insumo.id, insumo.activo)}
-            >
-              {insumo.activo ? 'Desactivar' : 'Activar'}
-            </Button>
-
+              </div>
+            </div>
           </div>
 
-        ))}
+          {/* Columna derecha - Lista de insumos */}
+          <div className="insumos-list-card">
+            <div className="insumos-list-header">
+              <span>📋</span>
+              <h3>Lista de Insumos ({insumos.length})</h3>
+            </div>
 
-        {insumos.length === 0 && (
-          <p>No hay insumos registrados</p>
-        )}
+            <div className="insumos-list-body">
+              {insumos.length === 0 ? (
+                <div className="empty-state">
+                  <span className="empty-icon">📦</span>
+                  <p>No hay insumos registrados</p>
+                </div>
+              ) : (
+                insumos.map(insumo => (
+                  <div
+                    key={insumo.id}
+                    className={`insumo-item ${!insumo.activo ? 'inactivo' : ''}`}
+                  >
+                    <div className="insumo-header">
+                      <div className="insumo-nombre">
+                        <strong>{insumo.nombre}</strong>
+                        <span className={`insumo-badge ${insumo.obligatorio_global ? 'obligatorio' : 'opcional'}`}>
+                          {insumo.obligatorio_global ? '🔴 Obligatorio' : '⚪ Opcional'}
+                        </span>
+                      </div>
+                    </div>
 
-      </Card>
+                    {insumo.descripcion && (
+                      <div className="insumo-descripcion">
+                        {insumo.descripcion}
+                      </div>
+                    )}
 
-    </Layout>
+                    <div className="insumo-detalles">
+                      <div className="insumo-detalle">
+                        <span>Categoría:</span>
+                        <span>{insumo.categoria}</span>
+                      </div>
+                      <div className="insumo-detalle">
+                        <span>Cantidad:</span>
+                        <span>{insumo.cantidad_establecida}</span>
+                      </div>
+                    </div>
+
+                    <div className="insumo-acciones">
+                      <button
+                        onClick={() => toggleActivo(insumo.id, insumo.activo)}
+                        className={`btn-toggle ${!insumo.activo ? 'activar' : ''}`}
+                      >
+                        {insumo.activo ? 'Desactivar' : 'Activar'}
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </AdminLayout>
   )
 }
