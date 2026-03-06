@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
-import { useLocation, Navigate } from 'react-router-dom'
+import { useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
 import ParamedicoLayout from '../layout/ParamedicoLayout'
 import '../../styles/CierreGuardia.css'
 
 export default function CierreGuardia() {
+
   const { state } = useLocation()
+  const navigate = useNavigate()
+
   const ambulancia = state?.ambulancia
 
   const categorias = [
@@ -25,7 +28,6 @@ export default function CierreGuardia() {
 
   const categoriaActual = categorias[categoriaIndex]
   const esUltimaCategoria = categoriaIndex === categorias.length - 1
-  const progreso = ((categoriaIndex + 1) / categorias.length) * 100
 
   if (!ambulancia) {
     return <Navigate to="/paramedico" />
@@ -36,51 +38,83 @@ export default function CierreGuardia() {
   }, [categoriaIndex])
 
   const cargarInsumos = async () => {
+
     setCargando(true)
 
     const { data, error } = await supabase
       .from('insumos')
-      .select('id, nombre, descripcion, cantidad_establecida')
+      .select(`
+        id,
+        nombre,
+        descripcion,
+        cantidad_establecida,
+        obligatorio_global,
+        insumos_por_sede (
+          sede_id
+        )
+      `)
       .eq('categoria', categoriaActual)
       .eq('activo', true)
       .order('nombre')
 
     if (error) {
-      console.error(error)
-    } else {
-      setInsumos(data || [])
+      console.error('Error cargando insumos:', error)
+      setCargando(false)
+      return
     }
 
+    const sedeId = ambulancia?.sede_id
+
+    const filtrados = data.filter(insumo => {
+
+      if (insumo.obligatorio_global) {
+        return true
+      }
+
+      if (!insumo.obligatorio_global) {
+        return insumo.insumos_por_sede?.some(
+          rel => rel.sede_id === sedeId
+        )
+      }
+
+      return false
+    })
+
+    setInsumos(filtrados)
     setCargando(false)
   }
 
-  // 🔥 CORREGIDO: guarda como número y permite 0
   const cambiarCantidad = (id, valor) => {
+
     setCantidades(prev => ({
       ...prev,
       [id]: valor === '' ? '' : Number(valor)
     }))
+
   }
 
   const obtenerEstadoInsumo = (insumo) => {
-    const cantidad = cantidades[insumo.id] ?? 0
+
+    const cantidad = cantidades[insumo.id]
     const establecida = insumo.cantidad_establecida ?? 0
 
-    if (cantidad === '') return 'pendiente'
+    if (cantidad === '' || cantidad === undefined) return 'pendiente'
     if (cantidad < establecida) return 'faltante'
     if (cantidad > establecida) return 'excedente'
-    if (cantidad === establecida) return 'completo'
-    return 'pendiente'
+    return 'completo'
   }
 
   const categoriaCompleta = () => {
+
     return insumos.every(insumo =>
       cantidades[insumo.id] !== undefined &&
       cantidades[insumo.id] !== ''
     )
+
   }
 
   const siguienteCategoria = () => {
+
     if (!categoriaCompleta()) {
       alert("Debes ingresar cantidad en todos los insumos")
       return
@@ -89,53 +123,45 @@ export default function CierreGuardia() {
     if (!esUltimaCategoria) {
       setCategoriaIndex(prev => prev + 1)
     }
-  }
 
-  const calcularResumen = () => {
-    let completos = 0
-    let faltantes = 0
-    let excedentes = 0
-
-    insumos.forEach(insumo => {
-      const estado = obtenerEstadoInsumo(insumo)
-      if (estado === 'completo') completos++
-      else if (estado === 'faltante') faltantes++
-      else if (estado === 'excedente') excedentes++
-    })
-
-    return { completos, faltantes, excedentes }
   }
 
   const finalizarCierre = () => {
+
     if (!categoriaCompleta()) {
-      alert("Debes completar todos los insumos antes de cerrar")
+      alert("Debes completar todos los insumos")
       return
     }
 
     const resumen = {
-      ambulancia: ambulancia.codigo,
       completos: [],
       faltantes: [],
       excedentes: []
     }
 
     insumos.forEach(insumo => {
+
       const cantidadReal = cantidades[insumo.id] ?? 0
-      const cantidadEstablecida = insumo.cantidad_establecida ?? 0
+      const cantidadEsperada = insumo.cantidad_establecida ?? 0
       const estado = obtenerEstadoInsumo(insumo)
 
       const item = {
         nombre: insumo.nombre,
-        esperado: cantidadEstablecida,
+        esperado: cantidadEsperada,
         real: cantidadReal
       }
 
       if (estado === 'faltante') resumen.faltantes.push(item)
-      else if (estado === 'completo') resumen.completos.push(item)
-      else if (estado === 'excedente') resumen.excedentes.push(item)
+      if (estado === 'excedente') resumen.excedentes.push(item)
+      if (estado === 'completo') resumen.completos.push(item)
+
     })
 
-    console.log('Cierre de guardia:', resumen)
+    console.log('Cierre de guardia:', {
+      ambulancia: ambulancia.codigo,
+      resumen,
+      observaciones: observacionesFinales
+    })
 
     const mensaje =
       `✅ Cierre de Guardia Completado\n\n` +
@@ -145,6 +171,8 @@ export default function CierreGuardia() {
       `Excedentes: ${resumen.excedentes.length}`
 
     alert(mensaje)
+
+    navigate("/", { replace: true })
   }
 
   if (cargando) {
@@ -160,33 +188,43 @@ export default function CierreGuardia() {
     )
   }
 
-  const resumen = calcularResumen()
-
   return (
+
     <ParamedicoLayout titulo="Cierre de Guardia">
+
       <div className="cierre-container">
 
         <div className="cierre-banner">
+
           <div className="cierre-banner-icono">📋</div>
+
           <div className="cierre-banner-info">
             <h2>Ambulancia {ambulancia.codigo}</h2>
             <p>Cierre de guardia - Registro de insumos</p>
           </div>
+
           {ambulancia.placa && (
             <div className="cierre-banner-placa">
               Placa: {ambulancia.placa}
             </div>
           )}
+
         </div>
 
         <div className="categoria-card">
+
           <h3>{categoriaActual}</h3>
 
           <div className="insumos-lista">
+
             {insumos.map(insumo => {
+
               const estado = obtenerEstadoInsumo(insumo)
+
               return (
+
                 <div key={insumo.id} className={`insumo-item ${estado}`}>
+
                   <div className="insumo-info">
                     <strong>{insumo.nombre}</strong>
                     <p>Cantidad establecida: {insumo.cantidad_establecida}</p>
@@ -197,16 +235,42 @@ export default function CierreGuardia() {
                     min="0"
                     placeholder="Cantidad real"
                     value={cantidades[insumo.id] ?? ''}
-                    onChange={(e) => cambiarCantidad(insumo.id, e.target.value)}
+                    onChange={(e) =>
+                      cambiarCantidad(insumo.id, e.target.value)
+                    }
                     className={`cantidad-input ${estado}`}
                   />
+
                 </div>
+
               )
+
             })}
+
           </div>
 
+          {esUltimaCategoria && (
+
+            <div className="observaciones-finales">
+
+              <h4>Observaciones finales (opcional)</h4>
+
+              <textarea
+                placeholder="Escribe observaciones generales del turno..."
+                value={observacionesFinales}
+                onChange={(e) =>
+                  setObservacionesFinales(e.target.value)
+                }
+              />
+
+            </div>
+
+          )}
+
           <div className="acciones-footer">
+
             {!esUltimaCategoria ? (
+
               <button
                 onClick={siguienteCategoria}
                 disabled={!categoriaCompleta()}
@@ -214,7 +278,9 @@ export default function CierreGuardia() {
               >
                 Siguiente →
               </button>
+
             ) : (
+
               <button
                 onClick={finalizarCierre}
                 disabled={!categoriaCompleta()}
@@ -222,11 +288,17 @@ export default function CierreGuardia() {
               >
                 ✅ Finalizar Cierre
               </button>
+
             )}
+
           </div>
+
         </div>
 
       </div>
+
     </ParamedicoLayout>
+
   )
+
 }

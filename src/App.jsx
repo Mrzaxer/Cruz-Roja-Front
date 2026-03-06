@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
 import Login from './components/auth/Login'
+import SubadminDashboard from "./components/subadmin/SubadminDashboard"
 
 // Admin
 import AdminDashboard from './components/admin/AdminDashboard'
@@ -94,6 +95,17 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <GestionInsumos />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ================= SUBADMIN ================= */}
+
+          <Route
+            path="/subadmin"
+            element={
+              <ProtectedRoute allowedRoles={['SUBADMIN']}>
+                <SubadminDashboard />
               </ProtectedRoute>
             }
           />
