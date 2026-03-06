@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/login.css'
+import logo from '../../assets/imagenes/logo.jpg'// Importar la imagen
 
 export default function Login() {
   const [correo, setCorreo] = useState('')
@@ -47,10 +48,10 @@ export default function Login() {
       <header className="login-header">
         <div className="header-content">
           <div className="logo">
-            <span></span>
+            <img src={logo} alt="Logo Cruz Roja" /> {/* Reemplazar la "a" con la imagen */}
           </div>
           <div className="titulo">
-            <h1>CRUZ ROJA</h1>
+            <h1>CRUZ ROJA MEXICANA</h1>
             <p>Jalisco</p>
           </div>
         </div>
@@ -59,7 +60,7 @@ export default function Login() {
       <div className="banner">
         <div className="banner-content">
           <h2>Sistema de Control de Ambulancias</h2>
-          <p>Gestión digital de insumos, inicios y cierres de guardia</p>
+          <p>Gestión digital de guardias </p>
         </div>
       </div>
 
@@ -82,7 +83,7 @@ export default function Login() {
                 type="email"
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
-                placeholder="ejemplo@cruzroja.cr"
+                placeholder="ejemplo@cruzroja.mx"
                 required
               />
             </div>
@@ -109,8 +110,7 @@ export default function Login() {
 
           <div className="credenciales-prueba">
             <p>Credenciales de prueba:</p>
-            <p>admin@cruzroja.cr / admin123</p>
-            <p>efrain@cruzroja.mx / 123</p>
+            <p>efrain@cruzroja.mx / 123  I admin@cruzroja.mx / admin123</p>
           </div>
         </div>
       </div>
@@ -118,22 +118,7 @@ export default function Login() {
       <footer className="login-footer">
         <div className="footer-content">
           <div className="footer-grid">
-            <div className="footer-col">
-              <h4>Cruz Roja</h4>
-              <p>
-                Institución de servicio humanitario, dedicada a la prevención y atención de emergencias.
-              </p>
-            </div>
-            <div className="footer-col">
-              <h4>Contacto</h4>
-              <p>Tel: (506) 2280-1234</p>
-              <p>Email: info@cruzroja.cr</p>
-            </div>
-            <div className="footer-col">
-              <h4>Horarios</h4>
-              <p>Lunes a Viernes: 8am - 5pm</p>
-              <p>Emergencias: 24/7</p>
-            </div>
+            
           </div>
           <div className="footer-bottom">
             © 2026 Cruz Roja - Todos los derechos reservados

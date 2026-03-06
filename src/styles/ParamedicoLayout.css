@@ -76,16 +76,25 @@ body {
   width: 48px;
   height: 48px;
   background-color: var(--rojo-mexicano);
-  border-radius: 12px;
+  border-radius: 50%; /* Cambiado a 50% para hacerlo círculo */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden; /* Para que la imagen no se salga del contenedor */
+  box-shadow: 0 10px 15px -3px rgba(178, 34, 34, 0.2); /* Sombra roja como en el login */
 }
 
+.paramedico-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ajusta la imagen para que cubra todo el contenedor */
+  border-radius: 50%; /* Cambiado a 50% para mantener la forma circular */
+}
+
+/* Ocultar el span que contenía el emoji */
 .paramedico-logo span {
-  color: white;
-  font-size: 1.5rem;
+  display: none;
 }
 
 .paramedico-logo-text h1 {
@@ -210,7 +219,7 @@ body {
   }
   
   .paramedico-logo span {
-    font-size: 1.25rem;
+    display: none; /* Mantener oculto el span */
   }
   
   .paramedico-logo-text h1 {

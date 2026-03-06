@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/admin.css'
+import logo from '../../assets/imagenes/logo.jpg' // Importar la imagen
 
 export default function AdminLayout({ children, titulo, subtitulo }) {
   const { user, logout } = useAuth()
@@ -30,7 +31,8 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
           <div className="header-top">
             <div className="logo-area">
               <div className="admin-logo">
-                <span>⛑️</span>
+                {/* Reemplazar el span con la imagen importada */}
+                <img src={logo} alt="Logo Cruz Roja" />
               </div>
               <div className="logo-text">
                 <h1>CRUZ ROJA</h1>
