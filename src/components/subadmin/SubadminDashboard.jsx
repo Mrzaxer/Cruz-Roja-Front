@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../../supabase"
 import { useNavigate } from "react-router-dom"
+import SubadminLayout from "../layout/SubadminLayout"
+import "../../styles/SubadminDashboard.css"
 
 export default function SubadminDashboard() {
-
   const [ambulancias, setAmbulancias] = useState([])
   const [insumosFaltantes, setInsumosFaltantes] = useState(0)
+  const [actividadesRecientes, setActividadesRecientes] = useState([])
 
   const navigate = useNavigate()
 
@@ -14,7 +16,6 @@ export default function SubadminDashboard() {
   }, [])
 
   const cargarDatos = async () => {
-
     const { data: ambulanciasData } = await supabase
       .from("ambulancias")
       .select("*")
@@ -31,100 +32,109 @@ export default function SubadminDashboard() {
     if (faltantes) {
       setInsumosFaltantes(faltantes.length)
     }
+
+    // Actividades de ejemplo
+    setActividadesRecientes([
+      { id: 1, texto: "Ambulancia AB-123 realizó guardia", tiempo: "Hace 2 horas" },
+      { id: 2, texto: "Insumos reabastecidos en sede principal", tiempo: "Hace 5 horas" },
+      { id: 3, texto: "Nuevo paramédico registrado", tiempo: "Ayer" },
+    ])
   }
 
   return (
-    <div style={{ padding: "40px" }}>
+    <SubadminLayout 
+      titulo="Panel de Control" 
+      subtitulo="Bienvenido al sistema de gestión"
+    >
+      <div className="subadmin-dashboard">
+        {/* Tarjetas de estadísticas */}
+        <div className="stats-grid">
+          <div className="stat-card" onClick={() => navigate("/subadmin/ambulancias")}>
+            <div className="stat-icon">🚑</div>
+            <div className="stat-content">
+              <div className="stat-label">Ambulancias</div>
+              <div className="stat-value">{ambulancias.length}</div>
+            </div>
+            <div className="stat-trend">+2 esta semana</div>
+          </div>
 
-      <h1>📊 Dashboard Subadministrador</h1>
-
-      {/* Tarjetas de datos */}
-      <div style={{
-        display: "flex",
-        gap: "20px",
-        marginTop: "30px"
-      }}>
-
-        <div style={{
-          background: "#f4f4f4",
-          padding: "20px",
-          borderRadius: "10px",
-          width: "200px"
-        }}>
-          <h3>🚑 Ambulancias</h3>
-          <p>{ambulancias.length}</p>
+          <div className="stat-card warning" onClick={() => navigate("/subadmin/insumos")}>
+            <div className="stat-icon">⚠️</div>
+            <div className="stat-content">
+              <div className="stat-label">Insumos Faltantes</div>
+              <div className="stat-value">{insumosFaltantes}</div>
+            </div>
+            
+          </div>
         </div>
 
-        <div style={{
-          background: "#ffe5e5",
-          padding: "20px",
-          borderRadius: "10px",
-          width: "200px"
-        }}>
-          <h3>⚠️ Faltantes</h3>
-          <p>{insumosFaltantes}</p>
+        {/* Acciones rápidas */}
+        <h2 className="section-title">
+          <span>⚡</span>
+          Acciones Rápidas
+        </h2>
+
+        <div className="actions-grid">
+          <div 
+            className="action-card insumos"
+            onClick={() => navigate("/subadmin/insumos")}
+          >
+            <div className="action-icon">📦</div>
+            <h3>Gestión de Insumos</h3>
+            <p>Administra el inventario de insumos médicos y verifica existencias</p>
+            <button className="action-button">
+              <span>📋</span>
+              Ir a Insumos
+              <span>→</span>
+            </button>
+          </div>
+
+          <div 
+            className="action-card ambulancias"
+            onClick={() => navigate("/subadmin/ambulancias")}
+          >
+            <div className="action-icon">🚑</div>
+            <h3>Gestión de Ambulancias</h3>
+            <p>Controla el estado y disponibilidad de la flotilla de ambulancias</p>
+            <button className="action-button">
+              <span>🚨</span>
+              Ir a Ambulancias
+              <span>→</span>
+            </button>
+          </div>
+
+          <div 
+            className="action-card reportes"
+            onClick={() => navigate("/subadmin/reportes")}
+          >
+            <div className="action-icon">📄</div>
+            <h3>Reportes</h3>
+            <p>Genera informes detallados de actividades y estadísticas</p>
+            <button className="action-button">
+              <span>📊</span>
+              Ver Reportes
+              <span>→</span>
+            </button>
+          </div>
         </div>
 
+        {/* Actividades recientes */}
+        <div className="recent-activity">
+          <h3 className="activity-title">
+            <span>🕒</span>
+            Actividad Reciente
+          </h3>
+          <ul className="activity-list">
+            {actividadesRecientes.map((actividad) => (
+              <li key={actividad.id} className="activity-item">
+                <div className="activity-dot"></div>
+                <span className="activity-text">{actividad.texto}</span>
+                <span className="activity-time">{actividad.tiempo}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-
-
-      {/* Botones principales */}
-      <div style={{
-        marginTop: "50px",
-        display: "flex",
-        gap: "20px"
-      }}>
-
-        <button
-          onClick={() => navigate("/subadmin/insumos")}
-          style={{
-            padding: "20px",
-            background: "#1976d2",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-            fontSize: "18px",
-            width: "180px"
-          }}
-        >
-          📦 Insumos
-        </button>
-
-        <button
-          onClick={() => navigate("/subadmin/ambulancias")}
-          style={{
-            padding: "20px",
-            background: "#2e7d32",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-            fontSize: "18px",
-            width: "180px"
-          }}
-        >
-          🚑 Ambulancias
-        </button>
-
-        <button
-          onClick={() => navigate("/subadmin/reportes")}
-          style={{
-            padding: "20px",
-            background: "#f57c00",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-            fontSize: "18px",
-            width: "180px"
-          }}
-        >
-          📄 Reportes
-        </button>
-
-      </div>
-
-    </div>
+    </SubadminLayout>
   )
 }

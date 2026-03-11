@@ -1,0 +1,370 @@
+/* ===== SUBADMIN LAYOUT - CRUZ ROJA MEXICANA ===== */
+:root {
+  --rojo-principal: #dc2626;
+  --rojo-oscuro: #b91c1c;
+  --rojo-claro: #fee2e2;
+  --rojo-fondo: #fef2f2;
+  --gris-fondo: #f8fafc;
+  --blanco: #ffffff;
+  --gris-100: #f1f5f9;
+  --gris-200: #e2e8f0;
+  --gris-300: #cbd5e1;
+  --gris-400: #94a3b8;
+  --gris-500: #64748b;
+  --gris-600: #475569;
+  --gris-700: #334155;
+  --gris-800: #1e293b;
+  --sombra: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --sombra-roja: 0 10px 15px -3px rgba(220, 38, 38, 0.2), 0 4px 6px -2px rgba(220, 38, 38, 0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--gris-fondo);
+}
+
+/* Contenedor principal */
+.subadmin-layout-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--gris-fondo) 0%, #ffffff 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Barra superior roja */
+.subadmin-top-bar {
+  background: linear-gradient(90deg, var(--rojo-principal), var(--rojo-oscuro));
+  height: 4px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+}
+
+/* Header */
+.subadmin-header {
+  background: var(--blanco);
+  border-bottom: 2px solid var(--rojo-claro);
+  width: 100%;
+  margin-top: 4px;
+  box-shadow: var(--sombra);
+}
+
+.subadmin-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.subadmin-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Logo y título */
+.subadmin-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.subadmin-logo {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: var(--sombra-roja);
+  transition: var(--transition);
+}
+
+.subadmin-logo:hover {
+  transform: scale(1.05) rotate(5deg);
+}
+
+.subadmin-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.subadmin-logo-text h1 {
+  color: var(--rojo-principal);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.subadmin-logo-text p {
+  color: var(--gris-500);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* Área de usuario */
+.subadmin-user-area {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--rojo-fondo);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--rojo-claro);
+}
+
+.subadmin-user-info {
+  text-align: right;
+}
+
+.subadmin-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gris-800);
+}
+
+.subadmin-user-role {
+  font-size: 0.75rem;
+  color: var(--rojo-principal);
+  font-weight: 600;
+}
+
+.subadmin-btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--rojo-principal);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.subadmin-btn-logout:hover {
+  background: var(--rojo-oscuro);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+}
+
+/* Navegación */
+.subadmin-nav {
+  display: flex;
+  gap: 2rem;
+  border-bottom: 3px solid var(--rojo-principal);
+  padding-bottom: 0.5rem;
+}
+
+.subadmin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: var(--transition);
+  white-space: nowrap;
+  color: var(--gris-600);
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  margin-bottom: -3px;
+}
+
+.subadmin-nav-item.active {
+  color: var(--rojo-principal);
+  font-weight: 600;
+  border-bottom: 3px solid var(--rojo-oscuro);
+  background: linear-gradient(to bottom, var(--rojo-fondo), transparent);
+}
+
+.subadmin-nav-item:hover:not(.active) {
+  color: var(--rojo-principal);
+  background: var(--rojo-fondo);
+  transform: translateY(-2px);
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+}
+
+/* Título de página */
+.subadmin-page-title {
+  background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.subadmin-page-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.subadmin-title-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.subadmin-title-content h2 {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.subadmin-title-content p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Contenido principal */
+.subadmin-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  flex: 1;
+  width: 100%;
+}
+
+/* Footer */
+.subadmin-footer {
+  background: linear-gradient(135deg, var(--gris-800), var(--gris-700));
+  color: white;
+  width: 100%;
+  margin-top: auto;
+  border-top: 3px solid var(--rojo-principal);
+}
+
+.subadmin-footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+.subadmin-footer-content p {
+  color: var(--gris-300);
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.subadmin-footer-year {
+  color: var(--gris-400);
+  font-size: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .subadmin-header-content,
+  .subadmin-title-content,
+  .subadmin-main,
+  .subadmin-footer-content {
+    padding: 1rem;
+  }
+
+  .subadmin-title-content h2 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .subadmin-header-top {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .subadmin-user-area {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .subadmin-nav {
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .subadmin-nav-item {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .nav-icon {
+    font-size: 1.1rem;
+  }
+
+  .subadmin-title-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .subadmin-logo-text h1 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .subadmin-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .subadmin-user-area {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .subadmin-user-info {
+    text-align: left;
+    width: 100%;
+  }
+
+  .subadmin-btn-logout {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-text {
+    display: none; /* Ocultar texto en móvil, solo iconos */
+  }
+
+  .subadmin-nav-item {
+    padding: 0.5rem;
+  }
+
+  .nav-icon {
+    font-size: 1.5rem;
+  }
+}
