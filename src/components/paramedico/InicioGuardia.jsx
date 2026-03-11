@@ -11,7 +11,7 @@ export default function InicioGuardia() {
 
   const ambulancia = state?.ambulancia
 
-  const [insumos, setInsumos] = useState([])
+  const [equipos, setEquipos] = useState([])
   const [equipoEstado, setEquipoEstado] = useState({})
   const [cargando, setCargando] = useState(true)
 
@@ -28,19 +28,15 @@ export default function InicioGuardia() {
     setCargando(true)
 
     const { data, error } = await supabase
-      .from('insumos')
+      .from('equipo_medico')
       .select(`
         id,
         nombre,
         descripcion,
-        categoria,
-        obligatorio_global,
-        insumos_por_sede (
-          sede_id
-        )
+        obligatorio_global
       `)
-      .eq('categoria', 'Equipo Médico')
       .eq('activo', true)
+      .order('nombre')
 
     if (error) {
       console.error('Error cargando equipo:', error)
@@ -48,24 +44,13 @@ export default function InicioGuardia() {
       return
     }
 
-    const filtrados = data.filter(insumo => {
-
-      if (insumo.obligatorio_global) {
-        return true
-      }
-
-      return insumo.insumos_por_sede?.some(
-        s => s.sede_id === ambulancia.sede_id
-      )
-
-    })
-
-    setInsumos(filtrados)
-
+    setEquipos(data)
     setCargando(false)
+
   }
 
   const toggleCheck = (id) => {
+
     setEquipoEstado(prev => ({
       ...prev,
       [id]: {
@@ -73,9 +58,11 @@ export default function InicioGuardia() {
         presente: !prev[id]?.presente
       }
     }))
+
   }
 
   const cambiarObservacion = (id, texto) => {
+
     setEquipoEstado(prev => ({
       ...prev,
       [id]: {
@@ -83,54 +70,61 @@ export default function InicioGuardia() {
         observacion: texto
       }
     }))
+
   }
 
   const guardarInicio = async () => {
 
-    const completos = []
-    const faltantes = []
+    try {
 
-    insumos.forEach(insumo => {
-
-      const estado = equipoEstado[insumo.id]
-
-      if (estado?.presente) {
-
-        completos.push({
-          nombre: insumo.nombre,
-          observacion: estado?.observacion || 'Sin observación'
+      // 1️⃣ Crear registro de inicio
+      const { data: registro, error: errorRegistro } = await supabase
+        .from('registros')
+        .insert({
+          sede_id: ambulancia.sede_id,
+          ambulancia_id: ambulancia.id,
+          tipo: 'INICIO'
         })
+        .select()
+        .single()
 
-      } else {
+      if (errorRegistro) throw errorRegistro
 
-        faltantes.push({
-          nombre: insumo.nombre,
-          observacion: estado?.observacion || 'Sin observación'
-        })
+      // 2️⃣ Guardar detalle del equipo
+      const detalles = equipos.map(equipo => ({
+        registro_id: registro.id,
+        equipo_id: equipo.id,
+        estado: equipoEstado[equipo.id]?.presente || false,
+        comentario: equipoEstado[equipo.id]?.observacion || null
+      }))
 
-      }
+      const { error: errorDetalle } = await supabase
+        .from('detalle_equipo')
+        .insert(detalles)
 
-    })
+      if (errorDetalle) throw errorDetalle
 
-    console.log('Guardando inicio de guardia:', {
-      ambulancia: ambulancia.codigo,
-      completos,
-      faltantes
-    })
+      const completos = detalles.filter(d => d.estado).length
+      const faltantes = detalles.length - completos
+      const porcentaje = Math.round((completos / detalles.length) * 100)
 
-    const totalCompletos = completos.length
-    const totalFaltantes = faltantes.length
-    const porcentaje = Math.round((totalCompletos / insumos.length) * 100)
+      alert(
+  `✅ Inicio de Guardia Registrado\n\n` +
+  `Ambulancia: ${ambulancia.codigo}\n` +
+  `Completos: ${completos}\n` +
+  `Faltantes: ${faltantes}\n` +
+  `Progreso: ${porcentaje}%`
+)
 
-    alert(
-      `✅ Inicio de Guardia Registrado\n\n` +
-      `Ambulancia: ${ambulancia.codigo}\n` +
-      `Completos: ${totalCompletos}\n` +
-      `Faltantes: ${totalFaltantes}\n` +
-      `Progreso: ${porcentaje}%`
-    )
+navigate("/login")
 
-    navigate("/")
+    } catch (error) {
+
+      console.error('Error guardando inicio:', error)
+      alert("Error al guardar inicio de guardia")
+
+    }
+
   }
 
   if (cargando) {
@@ -147,7 +141,7 @@ export default function InicioGuardia() {
   }
 
   const completos = Object.values(equipoEstado).filter(e => e?.presente).length
-  const total = insumos.length
+  const total = equipos.length
   const porcentaje = total > 0 ? Math.round((completos / total) * 100) : 0
 
   return (
@@ -162,7 +156,7 @@ export default function InicioGuardia() {
 
           <div className="ambulancia-info">
             <h2>Ambulancia {ambulancia.codigo}</h2>
-            <p>Inicio de guardia - Verificación de equipo</p>
+            <p>Inicio de guardia - Verificación de equipo médico</p>
           </div>
 
           {ambulancia.placa && (
@@ -186,45 +180,44 @@ export default function InicioGuardia() {
 
           <div className="equipo-lista">
 
-            {insumos.length === 0 ? (
+            {equipos.length === 0 ? (
 
               <div className="empty-state">
                 <div className="empty-icon">📦</div>
                 <h4>No hay equipo configurado</h4>
-                <p>Contacta al administrador para configurar el equipo médico</p>
               </div>
 
             ) : (
 
-              insumos.map(insumo => (
+              equipos.map(equipo => (
 
                 <div
-                  key={insumo.id}
-                  className={`equipo-item ${equipoEstado[insumo.id]?.presente ? 'completo' : ''}`}
+                  key={equipo.id}
+                  className={`equipo-item ${equipoEstado[equipo.id]?.presente ? 'completo' : ''}`}
                 >
 
                   <input
                     type="checkbox"
-                    checked={equipoEstado[insumo.id]?.presente || false}
-                    onChange={() => toggleCheck(insumo.id)}
+                    checked={equipoEstado[equipo.id]?.presente || false}
+                    onChange={() => toggleCheck(equipo.id)}
                     className="equipo-check"
                   />
 
                   <div className="equipo-contenido">
 
                     <div className="equipo-nombre">
-                      <strong>{insumo.nombre}</strong>
+                      <strong>{equipo.nombre}</strong>
 
-                      {equipoEstado[insumo.id]?.presente && (
+                      {equipoEstado[equipo.id]?.presente && (
                         <span className="equipo-badge">
                           ✓ Verificado
                         </span>
                       )}
                     </div>
 
-                    {insumo.descripcion && (
+                    {equipo.descripcion && (
                       <div className="equipo-descripcion">
-                        {insumo.descripcion}
+                        {equipo.descripcion}
                       </div>
                     )}
 
@@ -235,9 +228,9 @@ export default function InicioGuardia() {
                       <input
                         type="text"
                         placeholder="Observaciones (opcional)"
-                        value={equipoEstado[insumo.id]?.observacion || ''}
+                        value={equipoEstado[equipo.id]?.observacion || ''}
                         onChange={(e) =>
-                          cambiarObservacion(insumo.id, e.target.value)
+                          cambiarObservacion(equipo.id, e.target.value)
                         }
                       />
 
@@ -253,7 +246,7 @@ export default function InicioGuardia() {
 
           </div>
 
-          {insumos.length > 0 && (
+          {equipos.length > 0 && (
 
             <div className="resumen-verificacion">
 

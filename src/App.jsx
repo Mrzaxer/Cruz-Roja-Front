@@ -10,13 +10,17 @@ import GestionSedes from './components/admin/GestionSedes'
 import GestionUsuarios from './components/admin/GestionUsuarios'
 import GestionAmbulancias from './components/admin/GestionAmbulancias'
 import GestionInsumos from './components/admin/GestionInsumos'
+import Equipo from "./components/admin/Equipo"
+import Reportes from "./components/admin/Reportes"
 
 // Paramedico
 import ParamedicoDashboard from './components/paramedico/ParamedicoDashboard'
 import InicioGuardia from './components/paramedico/InicioGuardia'
 import CierreGuardia from './components/paramedico/CierreGuardia'
 
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
+
   const { user, loading } = useAuth()
 
   if (loading) {
@@ -43,14 +47,20 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children
 }
 
+
 function App() {
+
   return (
     <AuthProvider>
+
       <BrowserRouter>
+
         <Routes>
 
           {/* LOGIN */}
           <Route path="/login" element={<Login />} />
+
+
 
           {/* ================= ADMIN ================= */}
 
@@ -99,6 +109,24 @@ function App() {
             }
           />
 
+          <Route
+            path="/admin/equipo"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <Equipo />
+              </ProtectedRoute>
+            }
+          />
+<Route
+  path="/admin/reportes"
+  element={
+    <ProtectedRoute allowedRoles={['ADMIN']}>
+      <Reportes />
+    </ProtectedRoute>
+  }
+/>
+
+
           {/* ================= SUBADMIN ================= */}
 
           <Route
@@ -109,6 +137,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+
 
           {/* ================= PARAMEDICO ================= */}
 
@@ -139,11 +169,15 @@ function App() {
             }
           />
 
+
+
           {/* DEFAULT */}
           <Route path="/" element={<Navigate to="/login" />} />
 
         </Routes>
+
       </BrowserRouter>
+
     </AuthProvider>
   )
 }

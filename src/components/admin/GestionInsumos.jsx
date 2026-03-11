@@ -8,8 +8,7 @@ export default function GestionInsumos() {
   const [insumos, setInsumos] = useState([])
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')
-  const [categoria, setCategoria] = useState('Equipo Médico')
-  const [cantidad, setCantidad] = useState(0)
+  const [categoria, setCategoria] = useState('Manejo de Vía Aérea')
   const [obligatorioGlobal, setObligatorioGlobal] = useState(true)
   const [cargando, setCargando] = useState(false)
 
@@ -43,7 +42,6 @@ export default function GestionInsumos() {
           nombre,
           descripcion,
           categoria,
-          cantidad_establecida: cantidad,
           obligatorio_global: obligatorioGlobal,
           activo: true
         }
@@ -56,8 +54,7 @@ export default function GestionInsumos() {
 
       setNombre('')
       setDescripcion('')
-      setCategoria('Equipo Médico')
-      setCantidad(0)
+      setCategoria('Manejo de Vía Aérea')
       setObligatorioGlobal(true)
 
       cargarInsumos()
@@ -83,19 +80,16 @@ export default function GestionInsumos() {
     >
       <div className="insumos-container">
         
-        {/* Banner */}
         <div className="insumos-banner">
           <div className="insumos-banner-icon">💊</div>
           <div className="insumos-banner-text">
             <h2>Catálogo de Insumos</h2>
-            <p>Gestiona los insumos médicos y equipos disponibles</p>
+            <p>Gestiona los insumos médicos disponibles</p>
           </div>
         </div>
 
-        {/* Grid de dos columnas */}
         <div className="insumos-grid">
           
-          {/* Columna izquierda - Formulario de creación */}
           <div className="insumos-card">
             <div className="insumos-card-header">
               <span>➕</span>
@@ -123,33 +117,19 @@ export default function GestionInsumos() {
                   />
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Categoría</label>
-                    <select
-                      value={categoria}
-                      onChange={e => setCategoria(e.target.value)}
-                    >
-                      <option value="Equipo Médico">Equipo Médico</option>
-                      <option value="Manejo de Vía Aérea">Manejo de Vía Aérea</option>
-                      <option value="Manejo Intravenoso e Intramuscular">Manejo Intravenoso</option>
-                      <option value="Soluciones">Soluciones</option>
-                      <option value="Curaciones y Varios">Curaciones y Varios</option>
-                      <option value="Limpieza y Desinfección">Limpieza</option>
-                      <option value="Medicamentos">Medicamentos</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Cantidad establecida</label>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                      value={cantidad}
-                      onChange={e => setCantidad(Number(e.target.value))}
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Categoría</label>
+                  <select
+                    value={categoria}
+                    onChange={e => setCategoria(e.target.value)}
+                  >
+                    <option value="Manejo de Vía Aérea">Manejo de Vía Aérea</option>
+                    <option value="Manejo Intravenoso e Intramuscular">Manejo Intravenoso e Intramuscular</option>
+                    <option value="Soluciones">Soluciones</option>
+                    <option value="Curaciones y Varios">Curaciones y Varios</option>
+                    <option value="Limpieza y Desinfección">Limpieza y Desinfección</option>
+                    <option value="Medicamentos">Medicamentos</option>
+                  </select>
                 </div>
 
                 <div className="form-group">
@@ -170,13 +150,11 @@ export default function GestionInsumos() {
                 >
                   {cargando ? (
                     <>
-                      <span className="loading-spinner-small">⏳</span>
-                      Creando...
+                      ⏳ Creando...
                     </>
                   ) : (
                     <>
-                      <span>➕</span>
-                      Crear Insumo
+                      ➕ Crear Insumo
                     </>
                   )}
                 </button>
@@ -185,7 +163,6 @@ export default function GestionInsumos() {
             </div>
           </div>
 
-          {/* Columna derecha - Lista de insumos */}
           <div className="insumos-list-card">
             <div className="insumos-list-header">
               <span>📋</span>
@@ -205,12 +182,10 @@ export default function GestionInsumos() {
                     className={`insumo-item ${!insumo.activo ? 'inactivo' : ''}`}
                   >
                     <div className="insumo-header">
-                      <div className="insumo-nombre">
-                        <strong>{insumo.nombre}</strong>
-                        <span className={`insumo-badge ${insumo.obligatorio_global ? 'obligatorio' : 'opcional'}`}>
-                          {insumo.obligatorio_global ? '🔴 Obligatorio' : '⚪ Opcional'}
-                        </span>
-                      </div>
+                      <strong>{insumo.nombre}</strong>
+                      <span className={`insumo-badge ${insumo.obligatorio_global ? 'obligatorio' : 'opcional'}`}>
+                        {insumo.obligatorio_global ? '🔴 Obligatorio' : '⚪ Opcional'}
+                      </span>
                     </div>
 
                     {insumo.descripcion && (
@@ -220,14 +195,7 @@ export default function GestionInsumos() {
                     )}
 
                     <div className="insumo-detalles">
-                      <div className="insumo-detalle">
-                        <span>Categoría:</span>
-                        <span>{insumo.categoria}</span>
-                      </div>
-                      <div className="insumo-detalle">
-                        <span>Cantidad:</span>
-                        <span>{insumo.cantidad_establecida}</span>
-                      </div>
+                      <span>Categoría: {insumo.categoria}</span>
                     </div>
 
                     <div className="insumo-acciones">
@@ -238,11 +206,13 @@ export default function GestionInsumos() {
                         {insumo.activo ? 'Desactivar' : 'Activar'}
                       </button>
                     </div>
+
                   </div>
                 ))
               )}
             </div>
           </div>
+
         </div>
 
       </div>

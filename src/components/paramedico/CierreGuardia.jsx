@@ -41,16 +41,18 @@ export default function CierreGuardia() {
 
     setCargando(true)
 
+    const sedeId = ambulancia?.sede_id
+
     const { data, error } = await supabase
       .from('insumos')
       .select(`
         id,
         nombre,
         descripcion,
-        cantidad_establecida,
         obligatorio_global,
         insumos_por_sede (
-          sede_id
+          sede_id,
+          cantidad_establecida
         )
       `)
       .eq('categoria', categoriaActual)
@@ -63,22 +65,26 @@ export default function CierreGuardia() {
       return
     }
 
-    const sedeId = ambulancia?.sede_id
+    const filtrados = data
+      .map(insumo => {
 
-    const filtrados = data.filter(insumo => {
-
-      if (insumo.obligatorio_global) {
-        return true
-      }
-
-      if (!insumo.obligatorio_global) {
-        return insumo.insumos_por_sede?.some(
+        const relacion = insumo.insumos_por_sede?.find(
           rel => rel.sede_id === sedeId
         )
-      }
 
-      return false
-    })
+        if (insumo.obligatorio_global || relacion) {
+
+          return {
+            ...insumo,
+            cantidad_establecida: relacion?.cantidad_establecida ?? 0
+          }
+
+        }
+
+        return null
+
+      })
+      .filter(Boolean)
 
     setInsumos(filtrados)
     setCargando(false)
@@ -102,6 +108,7 @@ export default function CierreGuardia() {
     if (cantidad < establecida) return 'faltante'
     if (cantidad > establecida) return 'excedente'
     return 'completo'
+
   }
 
   const categoriaCompleta = () => {
@@ -173,6 +180,7 @@ export default function CierreGuardia() {
     alert(mensaje)
 
     navigate("/", { replace: true })
+
   }
 
   if (cargando) {
