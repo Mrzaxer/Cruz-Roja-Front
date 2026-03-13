@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
+import { useAuth } from '../../context/AuthContext'
 import ParamedicoLayout from '../layout/ParamedicoLayout'
 import '../../styles/CierreGuardia.css'
 
 export default function CierreGuardia() {
 
+  const { user } = useAuth()
   const { state } = useLocation()
   const navigate = useNavigate()
 
@@ -25,6 +27,7 @@ export default function CierreGuardia() {
   const [cantidades, setCantidades] = useState({})
   const [observacionesFinales, setObservacionesFinales] = useState('')
   const [cargando, setCargando] = useState(true)
+  const [guardando, setGuardando] = useState(false)
 
   const categoriaActual = categorias[categoriaIndex]
   const esUltimaCategoria = categoriaIndex === categorias.length - 1
@@ -50,9 +53,10 @@ export default function CierreGuardia() {
         nombre,
         descripcion,
         obligatorio_global,
-        insumos_por_sede (
+        insumos_por_sede!left (
           sede_id,
-          cantidad_establecida
+          cantidad_establecida,
+          activo_en_sede
         )
       `)
       .eq('categoria', categoriaActual)
@@ -65,24 +69,27 @@ export default function CierreGuardia() {
       return
     }
 
+    // Filtrar insumos activos en esta sede
     const filtrados = data
       .map(insumo => {
-
-        const relacion = insumo.insumos_por_sede?.find(
+        const configSede = insumo.insumos_por_sede?.find(
           rel => rel.sede_id === sedeId
         )
 
-        if (insumo.obligatorio_global || relacion) {
+        // Determinar si está activo en esta sede
+        const activoEnSede = configSede ? configSede.activo_en_sede !== false : true
+        
+        // Si no está activo, no aparece
+        if (!activoEnSede) return null
 
-          return {
-            ...insumo,
-            cantidad_establecida: relacion?.cantidad_establecida ?? 0
-          }
+        // Obtener cantidad establecida (mínimo 1)
+        let cantidadSede = configSede?.cantidad_establecida ?? 1
+        if (cantidadSede < 1) cantidadSede = 1
 
+        return {
+          ...insumo,
+          cantidad_establecida: cantidadSede
         }
-
-        return null
-
       })
       .filter(Boolean)
 
@@ -91,16 +98,13 @@ export default function CierreGuardia() {
   }
 
   const cambiarCantidad = (id, valor) => {
-
     setCantidades(prev => ({
       ...prev,
       [id]: valor === '' ? '' : Number(valor)
     }))
-
   }
 
   const obtenerEstadoInsumo = (insumo) => {
-
     const cantidad = cantidades[insumo.id]
     const establecida = insumo.cantidad_establecida ?? 0
 
@@ -108,78 +112,161 @@ export default function CierreGuardia() {
     if (cantidad < establecida) return 'faltante'
     if (cantidad > establecida) return 'excedente'
     return 'completo'
-
   }
 
   const categoriaCompleta = () => {
-
+    // Si no hay insumos, la categoría se considera completa automáticamente
+    if (insumos.length === 0) return true
+    
+    // Si hay insumos, todos deben tener cantidad
     return insumos.every(insumo =>
       cantidades[insumo.id] !== undefined &&
       cantidades[insumo.id] !== ''
     )
-
   }
 
   const siguienteCategoria = () => {
-
     if (!categoriaCompleta()) {
-      alert("Debes ingresar cantidad en todos los insumos")
+      alert("Debes ingresar cantidad en todos los insumos de esta categoría")
       return
     }
 
     if (!esUltimaCategoria) {
       setCategoriaIndex(prev => prev + 1)
     }
-
   }
 
-  const finalizarCierre = () => {
+  const recolectarTodosLosInsumos = async () => {
+    let todosLosInsumos = []
+    
+    // Recorrer todas las categorías
+    for (const cat of categorias) {
+      const { data } = await supabase
+        .from('insumos')
+        .select(`
+          id,
+          nombre,
+          descripcion,
+          obligatorio_global,
+          insumos_por_sede!left (
+            sede_id,
+            cantidad_establecida,
+            activo_en_sede
+          )
+        `)
+        .eq('categoria', cat)
+        .eq('activo', true)
 
+      // Filtrar insumos activos
+      const filtrados = (data || [])
+        .map(insumo => {
+          const configSede = insumo.insumos_por_sede?.find(
+            rel => rel.sede_id === ambulancia.sede_id
+          )
+          const activoEnSede = configSede ? configSede.activo_en_sede !== false : true
+          if (!activoEnSede) return null
+          
+          let cantidadSede = configSede?.cantidad_establecida ?? 1
+          if (cantidadSede < 1) cantidadSede = 1
+          
+          return {
+            ...insumo,
+            cantidad_establecida: cantidadSede
+          }
+        })
+        .filter(Boolean)
+      
+      todosLosInsumos = [...todosLosInsumos, ...filtrados]
+    }
+    
+    return todosLosInsumos
+  }
+
+  const finalizarCierre = async () => {
+
+    // Verificar que la categoría actual esté completa
     if (!categoriaCompleta()) {
-      alert("Debes completar todos los insumos")
+      alert("Debes completar todos los insumos de esta categoría")
       return
     }
 
-    const resumen = {
-      completos: [],
-      faltantes: [],
-      excedentes: []
-    }
+    setGuardando(true)
 
-    insumos.forEach(insumo => {
+    try {
+      // Recolectar TODOS los insumos de TODAS las categorías
+      const todosLosInsumos = await recolectarTodosLosInsumos()
+      
+      console.log('Total insumos a guardar:', todosLosInsumos.length)
 
-      const cantidadReal = cantidades[insumo.id] ?? 0
-      const cantidadEsperada = insumo.cantidad_establecida ?? 0
-      const estado = obtenerEstadoInsumo(insumo)
+      // Crear el registro principal de cierre
+      const { data: registro, error: errorRegistro } = await supabase
+        .from('registros')
+        .insert({
+          sede_id: ambulancia.sede_id,
+          ambulancia_id: ambulancia.id,
+          paramedico_id: user.id,
+          tipo: 'CIERRE',
+          observaciones: observacionesFinales
+        })
+        .select()
+        .single()
 
-      const item = {
-        nombre: insumo.nombre,
-        esperado: cantidadEsperada,
-        real: cantidadReal
+      if (errorRegistro) throw errorRegistro
+
+      // Guardar los detalles de TODOS los insumos
+      const detalles = todosLosInsumos.map(insumo => ({
+        registro_id: registro.id,
+        insumo_id: insumo.id,
+        cantidad_registrada: cantidades[insumo.id] ?? 0,
+        comentario: ''
+      }))
+
+      console.log('Guardando detalles:', detalles.length)
+
+      const { error: errorDetalles } = await supabase
+        .from('detalle_insumos')
+        .insert(detalles)
+
+      if (errorDetalles) throw errorDetalles
+
+      // Calcular resumen
+      const resumen = {
+        completos: [],
+        faltantes: [],
+        excedentes: []
       }
 
-      if (estado === 'faltante') resumen.faltantes.push(item)
-      if (estado === 'excedente') resumen.excedentes.push(item)
-      if (estado === 'completo') resumen.completos.push(item)
+      todosLosInsumos.forEach(insumo => {
+        const cantidadReal = cantidades[insumo.id] ?? 0
+        const cantidadEsperada = insumo.cantidad_establecida ?? 0
+        
+        const item = {
+          nombre: insumo.nombre,
+          esperado: cantidadEsperada,
+          real: cantidadReal
+        }
 
-    })
+        if (cantidadReal < cantidadEsperada) resumen.faltantes.push(item)
+        else if (cantidadReal > cantidadEsperada) resumen.excedentes.push(item)
+        else resumen.completos.push(item)
+      })
 
-    console.log('Cierre de guardia:', {
-      ambulancia: ambulancia.codigo,
-      resumen,
-      observaciones: observacionesFinales
-    })
+      alert(
+        `✅ Cierre de Guardia Guardado\n\n` +
+        `Total insumos: ${todosLosInsumos.length}\n` +
+        `Completos: ${resumen.completos.length}\n` +
+        `Faltantes: ${resumen.faltantes.length}\n` +
+        `Excedentes: ${resumen.excedentes.length}`
+      )
 
-    const mensaje =
-      `✅ Cierre de Guardia Completado\n\n` +
-      `Ambulancia: ${ambulancia.codigo}\n` +
-      `Completos: ${resumen.completos.length}\n` +
-      `Faltantes: ${resumen.faltantes.length}\n` +
-      `Excedentes: ${resumen.excedentes.length}`
+      navigate("/paramedico", { replace: true })
 
-    alert(mensaje)
-
-    navigate("/", { replace: true })
+    } catch (error) {
+      console.error('Error guardando cierre:', error)
+      alert("Error al guardar el cierre de guardia")
+    } finally {
+      setGuardando(false)
+    }
 
   }
 
@@ -223,83 +310,98 @@ export default function CierreGuardia() {
 
           <h3>{categoriaActual}</h3>
 
-          <div className="insumos-lista">
-
-            {insumos.map(insumo => {
-
-              const estado = obtenerEstadoInsumo(insumo)
-
-              return (
-
-                <div key={insumo.id} className={`insumo-item ${estado}`}>
-
-                  <div className="insumo-info">
-                    <strong>{insumo.nombre}</strong>
-                    <p>Cantidad establecida: {insumo.cantidad_establecida}</p>
-                  </div>
-
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Cantidad real"
-                    value={cantidades[insumo.id] ?? ''}
-                    onChange={(e) =>
-                      cambiarCantidad(insumo.id, e.target.value)
-                    }
-                    className={`cantidad-input ${estado}`}
-                  />
-
-                </div>
-
-              )
-
-            })}
-
-          </div>
-
-          {esUltimaCategoria && (
-
-            <div className="observaciones-finales">
-
-              <h4>Observaciones finales (opcional)</h4>
-
-              <textarea
-                placeholder="Escribe observaciones generales del turno..."
-                value={observacionesFinales}
-                onChange={(e) =>
-                  setObservacionesFinales(e.target.value)
-                }
-              />
-
+          {insumos.length === 0 ? (
+            <div className="empty-categoria">
+              <p>No hay insumos activos en esta categoría</p>
+              {!esUltimaCategoria && (
+                <button
+                  onClick={siguienteCategoria}
+                  className="btn-siguiente"
+                  style={{ marginTop: '1rem' }}
+                >
+                  Siguiente categoría →
+                </button>
+              )}
             </div>
+          ) : (
+            <>
+              <div className="insumos-lista">
+                {insumos.map(insumo => {
 
+                  const estado = obtenerEstadoInsumo(insumo)
+
+                  return (
+
+                    <div key={insumo.id} className={`insumo-item ${estado}`}>
+
+                      <div className="insumo-info">
+                        <strong>{insumo.nombre}</strong>
+                        {insumo.descripcion && (
+                          <p className="insumo-descripcion">{insumo.descripcion}</p>
+                        )}
+                        <p className="insumo-cantidad-establecida">
+                          Cantidad establecida: <span>{insumo.cantidad_establecida}</span>
+                        </p>
+                      </div>
+
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Cantidad real"
+                        value={cantidades[insumo.id] ?? ''}
+                        onChange={(e) =>
+                          cambiarCantidad(insumo.id, e.target.value)
+                        }
+                        className={`cantidad-input ${estado}`}
+                      />
+
+                    </div>
+
+                  )
+
+                })}
+              </div>
+
+              {!esUltimaCategoria && (
+                <div className="acciones-footer">
+                  <button
+                    onClick={siguienteCategoria}
+                    disabled={!categoriaCompleta()}
+                    className="btn-siguiente"
+                  >
+                    Siguiente categoría →
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          <div className="acciones-footer">
+          {esUltimaCategoria && (
+            <>
+              {insumos.length > 0 && (
+                <div className="observaciones-finales">
+                  <h4>Observaciones finales (opcional)</h4>
+                  <textarea
+                    placeholder="Escribe observaciones generales del turno..."
+                    value={observacionesFinales}
+                    onChange={(e) =>
+                      setObservacionesFinales(e.target.value)
+                    }
+                  />
+                </div>
+              )}
 
-            {!esUltimaCategoria ? (
-
-              <button
-                onClick={siguienteCategoria}
-                disabled={!categoriaCompleta()}
-                className="btn-siguiente"
-              >
-                Siguiente →
-              </button>
-
-            ) : (
-
-              <button
-                onClick={finalizarCierre}
-                disabled={!categoriaCompleta()}
-                className="btn-finalizar"
-              >
-                ✅ Finalizar Cierre
-              </button>
-
-            )}
-
-          </div>
+              <div className="acciones-footer">
+                <button
+                  onClick={finalizarCierre}
+                  disabled={!categoriaCompleta() || guardando}
+                  className="btn-finalizar"
+                >
+                  {guardando ? 'Guardando...' : '✅ Finalizar Cierre'}
+                </button>
+              </div>
+            </>
+          )}
 
         </div>
 

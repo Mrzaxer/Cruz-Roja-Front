@@ -1,52 +1,78 @@
 import { useEffect, useState } from "react"
 import { supabase } from "../../supabase"
+import { useAuth } from "../../context/AuthContext"
 import { useNavigate } from "react-router-dom"
 import SubadminLayout from "../layout/SubadminLayout"
 import "../../styles/SubadminDashboard.css"
 
 export default function SubadminDashboard() {
+  const { user } = useAuth()
   const [ambulancias, setAmbulancias] = useState([])
-  const [insumosFaltantes, setInsumosFaltantes] = useState(0)
+  const [paramedicos, setParamedicos] = useState([])
+  const [insumosPendientes, setInsumosPendientes] = useState(0)
   const [actividadesRecientes, setActividadesRecientes] = useState([])
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    cargarDatos()
-  }, [])
+    if (user?.sede_id) cargarDatos()
+  }, [user])
 
   const cargarDatos = async () => {
+    // Ambulancias de la sede
     const { data: ambulanciasData } = await supabase
       .from("ambulancias")
       .select("*")
+      .eq("sede_id", user.sede_id)
 
     if (ambulanciasData) {
       setAmbulancias(ambulanciasData)
     }
 
-    const { data: faltantes } = await supabase
-      .from("insumos")
+    // Paramédicos de la sede
+    const { data: paramedicosData } = await supabase
+      .from("usuarios")
       .select("*")
-      .eq("activo", false)
+      .eq("sede_id", user.sede_id)
+      .eq("rol", "PARAMEDICO")
 
-    if (faltantes) {
-      setInsumosFaltantes(faltantes.length)
+    if (paramedicosData) {
+      setParamedicos(paramedicosData)
     }
 
-    // Actividades de ejemplo
-    setActividadesRecientes([
-      { id: 1, texto: "Ambulancia AB-123 realizó guardia", tiempo: "Hace 2 horas" },
-      { id: 2, texto: "Insumos reabastecidos en sede principal", tiempo: "Hace 5 horas" },
-      { id: 3, texto: "Nuevo paramédico registrado", tiempo: "Ayer" },
-    ])
+    // Insumos sin configurar (cantidad 0)
+    const { data: configurados } = await supabase
+      .from("insumos_por_sede")
+      .select("*")
+      .eq("sede_id", user.sede_id)
+      .eq("cantidad_establecida", 0)
+
+    setInsumosPendientes(configurados?.length || 0)
+
+    // Actividades recientes de la sede
+    const { data: registros } = await supabase
+      .from("registros")
+      .select("*, ambulancias(codigo), usuarios(nombre)")
+      .eq("sede_id", user.sede_id)
+      .order("fecha", { ascending: false })
+      .limit(5)
+
+    setActividadesRecientes(
+      (registros || []).map(r => ({
+        id: r.id,
+        texto: `${r.usuarios?.nombre} realizó ${r.tipo} en ambulancia ${r.ambulancias?.codigo}`,
+        tiempo: new Date(r.fecha).toLocaleString()
+      }))
+    )
   }
 
   return (
     <SubadminLayout 
       titulo="Panel de Control" 
-      subtitulo="Bienvenido al sistema de gestión"
+      subtitulo={`Bienvenido a ${user?.sedes?.nombre || 'tu sede'}`}
     >
       <div className="subadmin-dashboard">
+        
         {/* Tarjetas de estadísticas */}
         <div className="stats-grid">
           <div className="stat-card" onClick={() => navigate("/subadmin/ambulancias")}>
@@ -55,16 +81,29 @@ export default function SubadminDashboard() {
               <div className="stat-label">Ambulancias</div>
               <div className="stat-value">{ambulancias.length}</div>
             </div>
-            <div className="stat-trend">+2 esta semana</div>
+            <div className="stat-trend">
+              {ambulancias.filter(a => a.estado === 'ACTIVA').length} activas
+            </div>
           </div>
 
-          <div className="stat-card warning" onClick={() => navigate("/subadmin/insumos")}>
+          <div className="stat-card" onClick={() => navigate("/subadmin/paramedicos")}>
+            <div className="stat-icon">👥</div>
+            <div className="stat-content">
+              <div className="stat-label">Paramédicos</div>
+              <div className="stat-value">{paramedicos.length}</div>
+            </div>
+            <div className="stat-trend">
+              {paramedicos.filter(p => p.activo).length} activos
+            </div>
+          </div>
+
+          <div className="stat-card warning" onClick={() => navigate("/subadmin/insumos-sede")}>
             <div className="stat-icon">⚠️</div>
             <div className="stat-content">
-              <div className="stat-label">Insumos Faltantes</div>
-              <div className="stat-value">{insumosFaltantes}</div>
+              <div className="stat-label">Insumos pendientes</div>
+              <div className="stat-value">{insumosPendientes}</div>
             </div>
-            
+            <div className="stat-trend">Requieren configuración</div>
           </div>
         </div>
 
@@ -76,29 +115,37 @@ export default function SubadminDashboard() {
 
         <div className="actions-grid">
           <div 
-            className="action-card insumos"
-            onClick={() => navigate("/subadmin/insumos")}
+            className="action-card ambulancias"
+            onClick={() => navigate("/subadmin/ambulancias")}
           >
-            <div className="action-icon">📦</div>
-            <h3>Gestión de Insumos</h3>
-            <p>Administra el inventario de insumos médicos y verifica existencias</p>
+            <div className="action-icon">🚑</div>
+            <h3>Ambulancias</h3>
+            <p>Gestiona la flotilla de tu sede</p>
             <button className="action-button">
-              <span>📋</span>
-              Ir a Insumos
               <span>→</span>
             </button>
           </div>
 
           <div 
-            className="action-card ambulancias"
-            onClick={() => navigate("/subadmin/ambulancias")}
+            className="action-card paramedicos"
+            onClick={() => navigate("/subadmin/paramedicos")}
           >
-            <div className="action-icon">🚑</div>
-            <h3>Gestión de Ambulancias</h3>
-            <p>Controla el estado y disponibilidad de la flotilla de ambulancias</p>
+            <div className="action-icon">👥</div>
+            <h3>Paramédicos</h3>
+            <p>Administra el personal</p>
             <button className="action-button">
-              <span>🚨</span>
-              Ir a Ambulancias
+              <span>→</span>
+            </button>
+          </div>
+
+          <div 
+            className="action-card insumos"
+            onClick={() => navigate("/subadmin/insumos-sede")}
+          >
+            <div className="action-icon">📦</div>
+            <h3>Insumos por Sede</h3>
+            <p>Configura cantidades</p>
+            <button className="action-button">
               <span>→</span>
             </button>
           </div>
@@ -107,12 +154,10 @@ export default function SubadminDashboard() {
             className="action-card reportes"
             onClick={() => navigate("/subadmin/reportes")}
           >
-            <div className="action-icon">📄</div>
+            <div className="action-icon">📊</div>
             <h3>Reportes</h3>
-            <p>Genera informes detallados de actividades y estadísticas</p>
+            <p>Estadísticas de tu sede</p>
             <button className="action-button">
-              <span>📊</span>
-              Ver Reportes
               <span>→</span>
             </button>
           </div>
@@ -134,6 +179,7 @@ export default function SubadminDashboard() {
             ))}
           </ul>
         </div>
+
       </div>
     </SubadminLayout>
   )

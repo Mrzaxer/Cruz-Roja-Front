@@ -3,6 +3,10 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 
 import Login from './components/auth/Login'
 import SubadminDashboard from "./components/subadmin/SubadminDashboard"
+import SubadminAmbulancias from "./components/subadmin/SubadminAmbulancias"
+import SubadminParamedicos from "./components/subadmin/SubadminParamedicos"
+import SubadminInsumosSede from "./components/subadmin/SubadminInsumosSede"
+import SubadminReportes from "./components/subadmin/SubadminReportes"
 
 // Admin
 import AdminDashboard from './components/admin/AdminDashboard'
@@ -117,14 +121,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-<Route
-  path="/admin/reportes"
-  element={
-    <ProtectedRoute allowedRoles={['ADMIN']}>
-      <Reportes />
-    </ProtectedRoute>
-  }
-/>
+          <Route
+            path="/admin/reportes"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <Reportes />
+              </ProtectedRoute>
+            }
+          />
 
 
           {/* ================= SUBADMIN ================= */}
@@ -138,6 +142,41 @@ function App() {
             }
           />
 
+          <Route
+            path="/subadmin/ambulancias"
+            element={
+              <ProtectedRoute allowedRoles={['SUBADMIN']}>
+                <SubadminAmbulancias />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/subadmin/paramedicos"
+            element={
+              <ProtectedRoute allowedRoles={['SUBADMIN']}>
+                <SubadminParamedicos />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/subadmin/insumos-sede"
+            element={
+              <ProtectedRoute allowedRoles={['SUBADMIN']}>
+                <SubadminInsumosSede />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/subadmin/reportes"
+            element={
+              <ProtectedRoute allowedRoles={['SUBADMIN']}>
+                <SubadminReportes />
+              </ProtectedRoute>
+            }
+          />
 
 
           {/* ================= PARAMEDICO ================= */}

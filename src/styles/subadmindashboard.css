@@ -470,3 +470,60 @@
     margin-left: 1.75rem;
   }
 }
+
+/* Estilos para la gestión de insumos */
+.insumos-sede-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.insumos-banner {
+  background: linear-gradient(135deg, #b22222, #8b0000);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: white;
+}
+
+.insumos-banner-icon {
+  font-size: 2.5rem;
+  background: rgba(255,255,255,0.2);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.insumos-banner-text h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.insumos-banner-text p {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #e5e7eb;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 1.1rem;
+}

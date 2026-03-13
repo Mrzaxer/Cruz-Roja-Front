@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
+import { useAuth } from '../../context/AuthContext'
 import ParamedicoLayout from '../layout/ParamedicoLayout'
 import '../../styles/InicioGuardia.css'
 
 export default function InicioGuardia() {
 
+  const { user } = useAuth()
   const { state } = useLocation()
   const navigate = useNavigate()
 
@@ -14,6 +16,7 @@ export default function InicioGuardia() {
   const [equipos, setEquipos] = useState([])
   const [equipoEstado, setEquipoEstado] = useState({})
   const [cargando, setCargando] = useState(true)
+  const [guardando, setGuardando] = useState(false)
 
   if (!ambulancia) {
     return <Navigate to="/paramedico" />
@@ -75,6 +78,8 @@ export default function InicioGuardia() {
 
   const guardarInicio = async () => {
 
+    setGuardando(true)
+
     try {
 
       // 1️⃣ Crear registro de inicio
@@ -83,7 +88,9 @@ export default function InicioGuardia() {
         .insert({
           sede_id: ambulancia.sede_id,
           ambulancia_id: ambulancia.id,
-          tipo: 'INICIO'
+          paramedico_id: user.id,        // ← ¡IMPORTANTE: Guardamos el ID del paramédico!
+          tipo: 'INICIO',
+          observaciones: ''              // Se puede agregar un campo de observaciones generales
         })
         .select()
         .single()
@@ -109,20 +116,22 @@ export default function InicioGuardia() {
       const porcentaje = Math.round((completos / detalles.length) * 100)
 
       alert(
-  `✅ Inicio de Guardia Registrado\n\n` +
-  `Ambulancia: ${ambulancia.codigo}\n` +
-  `Completos: ${completos}\n` +
-  `Faltantes: ${faltantes}\n` +
-  `Progreso: ${porcentaje}%`
-)
+        `✅ Inicio de Guardia Registrado\n\n` +
+        `Ambulancia: ${ambulancia.codigo}\n` +
+        `Completos: ${completos}\n` +
+        `Faltantes: ${faltantes}\n` +
+        `Progreso: ${porcentaje}%`
+      )
 
-navigate("/login")
+      navigate("/paramedico", { replace: true })
 
     } catch (error) {
 
       console.error('Error guardando inicio:', error)
       alert("Error al guardar inicio de guardia")
 
+    } finally {
+      setGuardando(false)
     }
 
   }
@@ -271,10 +280,10 @@ navigate("/login")
 
               <button
                 onClick={guardarInicio}
+                disabled={guardando}
                 className="btn-guardar"
               >
-                <span>✅</span>
-                Guardar inicio de guardia
+                {guardando ? 'Guardando...' : '✅ Guardar inicio de guardia'}
               </button>
 
             </div>

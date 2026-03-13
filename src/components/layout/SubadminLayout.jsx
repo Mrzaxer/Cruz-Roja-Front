@@ -1,12 +1,13 @@
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import '../../styles/SubadminLayout.css'
 import logo from '../../assets/imagenes/logo.jpg'
 
 export default function SubadminLayout({ children, titulo, subtitulo }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const currentPath = window.location.pathname
+  const location = useLocation()
+  const currentPath = location.pathname
 
   const handleLogout = () => {
     logout()
@@ -15,10 +16,14 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
 
   const menu = [
     { nombre: 'Dashboard', icono: '📊', path: '/subadmin' },
-    { nombre: 'Insumos', icono: '📦', path: '/subadmin/insumos' },
     { nombre: 'Ambulancias', icono: '🚑', path: '/subadmin/ambulancias' },
+    { nombre: 'Paramédicos', icono: '👥', path: '/subadmin/paramedicos' },
+    { nombre: 'Insumos por Sede', icono: '📦', path: '/subadmin/insumos-sede' },
     { nombre: 'Reportes', icono: '📈', path: '/subadmin/reportes' },
   ]
+
+  // Obtener nombre de la sede
+  const nombreSede = user?.sedes?.nombre || 'Sede no asignada'
 
   return (
     <div className="subadmin-layout-container">
@@ -36,7 +41,7 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
               </div>
               <div className="subadmin-logo-text">
                 <h1>CRUZ ROJA</h1>
-                <p>SUBADMIN</p>
+                <p>MEXICANA</p>
               </div>
             </div>
 
@@ -44,11 +49,11 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
             <div className="subadmin-user-area">
               <div className="subadmin-user-info">
                 <p className="subadmin-user-name">{user?.nombre || 'Subadministrador'}</p>
-                <p className="subadmin-user-role">{user?.sede_nombre || 'Sede'}</p>
+                <p className="subadmin-user-role">{nombreSede}</p>
               </div>
               <button onClick={handleLogout} className="subadmin-btn-logout">
                 <span>🚪</span>
-                <span>Salir</span>
+                <span>Cerrar Sesión</span>
               </button>
             </div>
           </div>
@@ -60,6 +65,10 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
                 key={item.path}
                 href={item.path}
                 className={`subadmin-nav-item ${currentPath === item.path ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  navigate(item.path)
+                }}
               >
                 <span className="nav-icon">{item.icono}</span>
                 <span className="nav-text">{item.nombre}</span>
@@ -73,7 +82,7 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
       <div className="subadmin-page-title">
         <div className="subadmin-title-content">
           <h2>{titulo}</h2>
-          {subtitulo && <p>{subtitulo}</p>}
+          {subtitulo && <p className="subadmin-subtitulo">{subtitulo}</p>}
         </div>
       </div>
 
@@ -82,11 +91,11 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
         {children}
       </main>
 
-      {/* Footer (opcional, similar al de paramédico) */}
+      {/* Footer */}
       <footer className="subadmin-footer">
         <div className="subadmin-footer-content">
           <p>Cruz Roja Mexicana - Sistema de Gestión de Ambulancias</p>
-          <p className="subadmin-footer-year">© 2026 Todos los derechos reservados</p>
+          <p className="subadmin-footer-year">© 2026 - Todos los derechos reservados</p>
         </div>
       </footer>
     </div>
