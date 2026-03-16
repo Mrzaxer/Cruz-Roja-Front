@@ -20,7 +20,11 @@ export default function Reportes() {
         registros (
           id,
           paramedico_id,
-          ambulancia_id
+          ambulancia_id,
+          fecha,
+          sedes (
+            nombre
+          )
         ),
         insumos (
           nombre
@@ -43,11 +47,11 @@ export default function Reportes() {
       return
     }
 
-    let csv = "Registro,Paramedico,Ambulancia,Insumo,Cantidad,Comentario\n"
+    let csv = "Registro,Sede,Fecha,Paramedico,Ambulancia,Insumo,Cantidad,Comentario\n"
 
     datos.forEach(d => {
 
-      csv += `${d.registros?.id},${d.registros?.paramedico_id},${d.registros?.ambulancia_id},${d.insumos?.nombre},${d.cantidad_registrada},${d.comentario}\n`
+      csv += `${d.registros?.id},${d.registros?.sedes?.nombre},${d.registros?.fecha},${d.registros?.paramedico_id},${d.registros?.ambulancia_id},${d.insumos?.nombre},${d.cantidad_registrada},${d.comentario}\n`
 
     })
 
@@ -88,6 +92,8 @@ export default function Reportes() {
           <thead>
             <tr>
               <th>Registro</th>
+              <th>Sede</th>
+              <th>Fecha</th>
               <th>Paramédico</th>
               <th>Ambulancia</th>
               <th>Insumo</th>
@@ -102,6 +108,8 @@ export default function Reportes() {
 
               <tr key={i}>
                 <td>{d.registros?.id}</td>
+                <td>{d.registros?.sedes?.nombre}</td>
+                <td>{d.registros?.fecha}</td>
                 <td>{d.registros?.paramedico_id}</td>
                 <td>{d.registros?.ambulancia_id}</td>
                 <td>{d.insumos?.nombre}</td>

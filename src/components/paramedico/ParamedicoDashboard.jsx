@@ -108,7 +108,7 @@ export default function ParamedicoDashboard() {
               </div>
 
               <div className="menu-item" onClick={irAInsumos}>
-                <div className="menu-icon">📦</div>
+                <div className="menu-icon">💊</div>
                 <h3>Insumos</h3>
                 <p>Revisar inventario de insumos</p>
                 <div className="menu-arrow">→</div>

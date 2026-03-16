@@ -39,7 +39,6 @@ export default function InicioGuardia() {
         obligatorio_global
       `)
       .eq('activo', true)
-      .order('nombre')
 
     if (error) {
       console.error('Error cargando equipo:', error)
@@ -47,7 +46,15 @@ export default function InicioGuardia() {
       return
     }
 
-    setEquipos(data)
+    // ORDENAR ALFABÉTICO + NUMÉRICO
+    const equiposOrdenados = data.sort((a, b) =>
+      a.nombre.localeCompare(b.nombre, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      })
+    )
+
+    setEquipos(equiposOrdenados)
     setCargando(false)
 
   }
@@ -82,22 +89,20 @@ export default function InicioGuardia() {
 
     try {
 
-      // 1️⃣ Crear registro de inicio
       const { data: registro, error: errorRegistro } = await supabase
         .from('registros')
         .insert({
           sede_id: ambulancia.sede_id,
           ambulancia_id: ambulancia.id,
-          paramedico_id: user.id,        // ← ¡IMPORTANTE: Guardamos el ID del paramédico!
+          paramedico_id: user.id,
           tipo: 'INICIO',
-          observaciones: ''              // Se puede agregar un campo de observaciones generales
+          observaciones: ''
         })
         .select()
         .single()
 
       if (errorRegistro) throw errorRegistro
 
-      // 2️⃣ Guardar detalle del equipo
       const detalles = equipos.map(equipo => ({
         registro_id: registro.id,
         equipo_id: equipo.id,

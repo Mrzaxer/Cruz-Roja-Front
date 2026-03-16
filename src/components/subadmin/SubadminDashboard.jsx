@@ -142,7 +142,7 @@ export default function SubadminDashboard() {
             className="action-card insumos"
             onClick={() => navigate("/subadmin/insumos-sede")}
           >
-            <div className="action-icon">📦</div>
+            <div className="action-icon">💊        </div>
             <h3>Insumos por Sede</h3>
             <p>Configura cantidades</p>
             <button className="action-button">
