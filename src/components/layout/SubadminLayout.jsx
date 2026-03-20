@@ -18,7 +18,7 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
     { nombre: 'Dashboard', icono: '📊', path: '/subadmin' },
     { nombre: 'Ambulancias', icono: '🚑', path: '/subadmin/ambulancias' },
     { nombre: 'Paramédicos', icono: '👥', path: '/subadmin/paramedicos' },
-    { nombre: 'Insumos por Sede', icono: '📦', path: '/subadmin/insumos-sede' },
+    { nombre: 'Insumos por Sede', icono: '💉', path: '/subadmin/insumos-sede' },
     { nombre: 'Reportes', icono: '📈', path: '/subadmin/reportes' },
   ]
 
@@ -40,8 +40,8 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
                 <img src={logo} alt="Logo Cruz Roja" />
               </div>
               <div className="subadmin-logo-text">
-                <h1>CRUZ ROJA</h1>
-                <p>MEXICANA</p>
+                <h1>CRUZ ROJA MEXICANA</h1>
+                <p>Subadministrador</p>
               </div>
             </div>
 
@@ -90,14 +90,6 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
       <main className="subadmin-main">
         {children}
       </main>
-
-      {/* Footer */}
-      <footer className="subadmin-footer">
-        <div className="subadmin-footer-content">
-          <p>Cruz Roja Mexicana - Sistema de Gestión de Ambulancias</p>
-          <p className="subadmin-footer-year">© 2026 - Todos los derechos reservados</p>
-        </div>
-      </footer>
     </div>
   )
 }

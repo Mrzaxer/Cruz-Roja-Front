@@ -112,48 +112,6 @@ export default function AdminDashboard() {
 
       </div>
 
-
-      <div className="quick-actions-grid">
-
-        <a href="/admin/sedes" className="quick-action-card">
-          <div className="quick-action-icon">🏢</div>
-          <h3>Gestión de Sedes</h3>
-          <p>Administre las sedes de la institución</p>
-          <span className="quick-action-link red">
-            Ir a Sedes →
-          </span>
-        </a>
-
-        <a href="/admin/usuarios" className="quick-action-card">
-          <div className="quick-action-icon">👥</div>
-          <h3>Gestión de Usuarios</h3>
-          <p>Administre paramédicos y administradores</p>
-          <span className="quick-action-link blue">
-            Ir a Usuarios →
-          </span>
-        </a>
-
-        <a href="/admin/ambulancias" className="quick-action-card">
-          <div className="quick-action-icon">🚑</div>
-          <h3>Gestión de Ambulancias</h3>
-          <p>Control de flotilla de ambulancias</p>
-          <span className="quick-action-link green">
-            Ir a Ambulancias →
-          </span>
-        </a>
-
-        <a href="/admin/equipo" className="quick-action-card">
-          <div className="quick-action-icon">🧰</div>
-          <h3>Gestión de Equipo</h3>
-          <p>Administre el equipo médico</p>
-          <span className="quick-action-link purple">
-            Ir a Equipo →
-          </span>
-        </a>
-
-      </div>
-
-
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

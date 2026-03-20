@@ -107,62 +107,6 @@ export default function SubadminDashboard() {
           </div>
         </div>
 
-        {/* Acciones rápidas */}
-        <h2 className="section-title">
-          <span>⚡</span>
-          Acciones Rápidas
-        </h2>
-
-        <div className="actions-grid">
-          <div 
-            className="action-card ambulancias"
-            onClick={() => navigate("/subadmin/ambulancias")}
-          >
-            <div className="action-icon">🚑</div>
-            <h3>Ambulancias</h3>
-            <p>Gestiona la flotilla de tu sede</p>
-            <button className="action-button">
-              <span>→</span>
-            </button>
-          </div>
-
-          <div 
-            className="action-card paramedicos"
-            onClick={() => navigate("/subadmin/paramedicos")}
-          >
-            <div className="action-icon">👥</div>
-            <h3>Paramédicos</h3>
-            <p>Administra el personal</p>
-            <button className="action-button">
-              <span>→</span>
-            </button>
-          </div>
-
-          <div 
-            className="action-card insumos"
-            onClick={() => navigate("/subadmin/insumos-sede")}
-          >
-            <div className="action-icon">💊        </div>
-            <h3>Insumos por Sede</h3>
-            <p>Configura cantidades</p>
-            <button className="action-button">
-              <span>→</span>
-            </button>
-          </div>
-
-          <div 
-            className="action-card reportes"
-            onClick={() => navigate("/subadmin/reportes")}
-          >
-            <div className="action-icon">📊</div>
-            <h3>Reportes</h3>
-            <p>Estadísticas de tu sede</p>
-            <button className="action-button">
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-
         {/* Actividades recientes */}
         <div className="recent-activity">
           <h3 className="activity-title">

@@ -1,7 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/ParamedicoLayout.css'
-import logo from '../../assets/imagenes/logo.jpg' // Importar la imagen
+import logo from '../../assets/imagenes/logo.jpg'
 
 export default function ParamedicoLayout({ children, titulo }) {
   const { user, logout } = useAuth()
@@ -24,7 +24,6 @@ export default function ParamedicoLayout({ children, titulo }) {
             {/* Logo y título */}
             <div className="paramedico-logo-area">
               <div className="paramedico-logo">
-                {/* Reemplazar el span con la imagen importada */}
                 <img src={logo} alt="Logo Cruz Roja" />
               </div>
               <div className="paramedico-logo-text">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../supabase'
-import ParamedicoLayout from '../layout/ParamedicoLayout' // Cambiamos a ParamedicoLayout
+import ParamedicoLayout from '../layout/ParamedicoLayout'
 import '../../styles/ParamedicoDashboard.css'
 
 export default function ParamedicoDashboard() {
@@ -99,19 +99,20 @@ export default function ParamedicoDashboard() {
           <div className="paramedico-card">
             <h3>🚑 Ambulancia {ambulanciaSeleccionada?.codigo}</h3>
             
-            <div className="menu-grid">
-              <div className="menu-item" onClick={irAEquipo}>
-                <div className="menu-icon">🧰</div>
+            {/* MENÚ CON CLASES ÚNICAS */}
+            <div className="paramedico-menu-grid">
+              <div className="paramedico-menu-item" onClick={irAEquipo}>
+                <div className="paramedico-menu-icon">🧰</div>
                 <h3>Equipo Médico</h3>
                 <p>Verificar equipo y herramientas</p>
-                <div className="menu-arrow">→</div>
+                <div className="paramedico-menu-arrow">→</div>
               </div>
 
-              <div className="menu-item" onClick={irAInsumos}>
-                <div className="menu-icon">💊</div>
+              <div className="paramedico-menu-item" onClick={irAInsumos}>
+                <div className="paramedico-menu-icon">💉</div>
                 <h3>Insumos</h3>
                 <p>Revisar inventario de insumos</p>
-                <div className="menu-arrow">→</div>
+                <div className="paramedico-menu-arrow">→</div>
               </div>
             </div>
 

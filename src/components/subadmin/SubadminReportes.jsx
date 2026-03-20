@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { useAuth } from '../../context/AuthContext'
 import SubadminLayout from '../layout/SubadminLayout'
+import '../../styles/SubadminReportes.css'
 
 // Función para formatear fecha a hora de México
 const formatearFechaLocal = (fechaUTC) => {
@@ -16,6 +17,232 @@ const formatearFechaLocal = (fechaUTC) => {
     minute: '2-digit',
     hour12: true
   })
+}
+
+// Función para generar PDF
+const generarPDF = (registro, detalles) => {
+  // Crear una nueva ventana para el PDF
+  const ventanaPDF = window.open('', '_blank')
+  
+  // Agrupar detalles por categoría
+  const detallesPorCategoria = {}
+  detalles.forEach(detalle => {
+    const categoria = detalle.insumo?.categoria || 'Sin categoría'
+    if (!detallesPorCategoria[categoria]) {
+      detallesPorCategoria[categoria] = []
+    }
+    detallesPorCategoria[categoria].push(detalle)
+  })
+
+  // Generar HTML del PDF
+  const contenidoHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Formato de Cierre - Ambulancia ${registro.ambulancias?.codigo}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 40px;
+          color: #333;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 2px solid #b22222;
+          padding-bottom: 20px;
+        }
+        .header h1 {
+          color: #b22222;
+          margin: 0;
+          font-size: 24px;
+        }
+        .header h2 {
+          color: #666;
+          margin: 5px 0 0;
+          font-size: 18px;
+          font-weight: normal;
+        }
+        .info-section {
+          background-color: #f9f9f9;
+          padding: 15px;
+          border-radius: 8px;
+          margin-bottom: 30px;
+          border: 1px solid #ddd;
+        }
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+        .info-item {
+          margin: 5px 0;
+        }
+        .info-label {
+          font-weight: bold;
+          color: #555;
+        }
+        .categoria {
+          margin-bottom: 25px;
+          page-break-inside: avoid;
+        }
+        .categoria-titulo {
+          background-color: #b22222;
+          color: white;
+          padding: 8px 15px;
+          margin: 0 0 15px 0;
+          border-radius: 5px;
+          font-size: 16px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 15px;
+        }
+        th {
+          background-color: #f0f0f0;
+          padding: 10px;
+          text-align: left;
+          font-size: 14px;
+          border: 1px solid #ddd;
+        }
+        td {
+          padding: 8px 10px;
+          border: 1px solid #ddd;
+          font-size: 13px;
+        }
+        .observaciones {
+          margin-top: 30px;
+          padding: 15px;
+          background-color: #f9f9f9;
+          border-left: 4px solid #b22222;
+          font-style: italic;
+        }
+        .footer {
+          margin-top: 40px;
+          text-align: center;
+          font-size: 12px;
+          color: #999;
+          border-top: 1px solid #eee;
+          padding-top: 20px;
+        }
+        .badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: bold;
+        }
+        .badge-completo {
+          background-color: #dcfce7;
+          color: #166534;
+        }
+        .badge-faltante {
+          background-color: #fee2e2;
+          color: #991b1b;
+        }
+        .badge-excedente {
+          background-color: #dbeafe;
+          color: #1e40af;
+        }
+        @media print {
+          body { margin: 20px; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>CRUZ ROJA MEXICANA</h1>
+        <h2>Formato de Cierre de Guardia</h2>
+      </div>
+      
+      <div class="info-section">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Fecha:</span> ${formatearFechaLocal(registro.fecha)}
+          </div>
+          <div class="info-item">
+            <span class="info-label">Ambulancia:</span> ${registro.ambulancias?.codigo || 'N/A'}
+          </div>
+          <div class="info-item">
+            <span class="info-label">Paramédico:</span> ${registro.usuarios?.nombre || 'N/A'}
+          </div>
+          <div class="info-item">
+            <span class="info-label">Correo:</span> ${registro.usuarios?.correo || 'N/A'}
+          </div>
+        </div>
+      </div>
+
+      ${Object.keys(detallesPorCategoria).map(categoria => `
+        <div class="categoria">
+          <div class="categoria-titulo">${categoria}</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Insumo</th>
+                <th>Descripción</th>
+                <th>Cantidad Establecida</th>
+                <th>Cantidad Registrada</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detallesPorCategoria[categoria].map(detalle => {
+                const cantidad = detalle.cantidad_registrada || 0
+                const establecida = detalle.insumo?.cantidad_establecida || 0
+                let estado = ''
+                let badgeClass = ''
+                
+                if (cantidad < establecida) {
+                  estado = 'Faltante'
+                  badgeClass = 'badge-faltante'
+                } else if (cantidad > establecida) {
+                  estado = 'Excedente'
+                  badgeClass = 'badge-excedente'
+                } else {
+                  estado = 'Completo'
+                  badgeClass = 'badge-completo'
+                }
+                
+                return `
+                  <tr>
+                    <td><strong>${detalle.insumo?.nombre || 'N/A'}</strong></td>
+                    <td>${detalle.insumo?.descripcion || '-'}</td>
+                    <td>${establecida}</td>
+                    <td>${cantidad}</td>
+                    <td><span class="badge ${badgeClass}">${estado}</span></td>
+                  </tr>
+                `
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `).join('')}
+
+      ${registro.observaciones ? `
+        <div class="observaciones">
+          <strong>Observaciones:</strong><br>
+          ${registro.observaciones}
+        </div>
+      ` : ''}
+
+      <div class="footer">
+        <p>Documento generado el ${new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })}</p>
+        <p>Sistema de Gestión de Ambulancias - Cruz Roja Mexicana</p>
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px;" class="no-print">
+        <button onclick="window.print()" style="padding: 10px 20px; background-color: #b22222; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+          🖨️ Imprimir / Guardar PDF
+        </button>
+      </div>
+    </body>
+    </html>
+  `
+
+  ventanaPDF.document.write(contenidoHTML)
+  ventanaPDF.document.close()
 }
 
 export default function SubadminReportes() {
@@ -174,6 +401,12 @@ export default function SubadminReportes() {
     setCargandoDetalles(false)
   }
 
+  const descargarPDF = () => {
+    if (registroSeleccionado && detalles.length > 0) {
+      generarPDF(registroSeleccionado, detalles)
+    }
+  }
+
   const cerrarModal = () => {
     setModalAbierto(false)
     setRegistroSeleccionado(null)
@@ -188,82 +421,58 @@ export default function SubadminReportes() {
       <div className="reportes-container">
         
         {/* Filtros de fecha */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '1rem', 
-          marginBottom: '2rem',
-          padding: '1rem',
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          flexWrap: 'wrap'
-        }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              Fecha Inicio
-            </label>
+        <div className="filtros-fecha">
+          <div className="filtro-group">
+            <label className="filtro-label">Fecha Inicio</label>
             <input
               type="date"
+              className="filtro-input"
               value={fechaI}
               onChange={(e) => setFechaI(e.target.value)}
-              style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
             />
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              Fecha Fin
-            </label>
+          <div className="filtro-group">
+            <label className="filtro-label">Fecha Fin</label>
             <input
               type="date"
+              className="filtro-input"
               value={fechaF}
               onChange={(e) => setFechaF(e.target.value)}
-              style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
             />
           </div>
         </div>
 
         {/* Tarjetas de resumen */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '1rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{ backgroundColor: '#b22222', color: 'white', padding: '1.5rem', borderRadius: '8px' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
-            <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>Total Registros</div>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{resumen.total}</div>
+        <div className="resumen-grid">
+          <div className="resumen-card total">
+            <div className="resumen-icon">📋</div>
+            <div className="resumen-label">Total Registros</div>
+            <div className="resumen-valor">{resumen.total}</div>
           </div>
-          <div style={{ backgroundColor: '#2563eb', color: 'white', padding: '1.5rem', borderRadius: '8px' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🚑</div>
-            <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>Inicios</div>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{resumen.inicios}</div>
+          <div className="resumen-card inicios">
+            <div className="resumen-icon">🚑</div>
+            <div className="resumen-label">Inicios</div>
+            <div className="resumen-valor">{resumen.inicios}</div>
           </div>
-          <div style={{ backgroundColor: '#16a34a', color: 'white', padding: '1.5rem', borderRadius: '8px' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
-            <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>Cierres</div>
-            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{resumen.cierres}</div>
+          <div className="resumen-card cierres">
+            <div className="resumen-icon">✅</div>
+            <div className="resumen-label">Cierres</div>
+            <div className="resumen-valor">{resumen.cierres}</div>
           </div>
         </div>
 
         {/* Tabla de registros */}
-        <div className="crud-container">
-          <h3 style={{ marginBottom: '1rem' }}>Registros del período</h3>
+        <div className="registros-table-container">
+          <h3 className="registros-titulo">Registros del período</h3>
           
           {registros.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '3rem', 
-              backgroundColor: '#f9f9f9', 
-              borderRadius: '8px',
-              color: '#666'
-            }}>
-              <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>📭</span>
+            <div className="empty-state">
+              <span className="empty-icon">📭</span>
               <p>No hay registros en este período</p>
             </div>
           ) : (
             <div className="table-responsive">
-              <table>
+              <table className="registros-table">
                 <thead>
                   <tr>
                     <th>Fecha (Hora México)</th>
@@ -278,38 +487,21 @@ export default function SubadminReportes() {
                     <tr key={r.id}>
                       <td>{formatearFechaLocal(r.fecha)}</td>
                       <td>
-                        <span style={{
-                          backgroundColor: r.tipo === 'INICIO' ? '#dcfce7' : '#fee2e2',
-                          color: r.tipo === 'INICIO' ? '#166534' : '#991b1b',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '20px',
-                          fontSize: '0.8rem',
-                          fontWeight: '600'
-                        }}>
+                        <span className={`tipo-badge ${r.tipo === 'INICIO' ? 'inicio' : 'cierre'}`}>
                           {r.tipo}
                         </span>
                       </td>
                       <td>{r.ambulancias?.codigo || '-'}</td>
                       <td>
-                        <div style={{ fontWeight: '500' }}>{r.usuarios?.nombre || '-'}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#666' }}>{r.usuarios?.correo || ''}</div>
+                        <div className="usuario-info">
+                          <span className="usuario-nombre">{r.usuarios?.nombre || '-'}</span>
+                          <span className="usuario-correo">{r.usuarios?.correo || ''}</span>
+                        </div>
                       </td>
                       <td>
                         <button
                           onClick={() => verDetalles(r)}
-                          style={{
-                            backgroundColor: r.tipo === 'INICIO' ? '#2563eb' : '#16a34a',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.4rem 1rem',
-                            borderRadius: '4px',
-                            fontSize: '0.8rem',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem'
-                          }}
+                          className={`btn-ver-detalles ${r.tipo === 'INICIO' ? 'inicio' : 'cierre'}`}
                         >
                           <span>📋</span>
                           Ver {r.tipo === 'INICIO' ? 'Inicio' : 'Cierre'}
@@ -327,46 +519,18 @@ export default function SubadminReportes() {
 
       {/* Modal de detalles */}
       {modalAbierto && registroSeleccionado && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '2rem',
-            maxWidth: '600px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', color: '#b22222' }}>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2 className="modal-title">
                 {registroSeleccionado.tipo === 'INICIO' ? '🚑 Inicio de Guardia' : '✅ Cierre de Guardia'}
               </h2>
-              <button
-                onClick={cerrarModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  color: '#666'
-                }}
-              >
+              <button onClick={cerrarModal} className="modal-close">
                 ✕
               </button>
             </div>
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+            <div className="modal-info">
               <p><strong>Fecha:</strong> {formatearFechaLocal(registroSeleccionado.fecha)}</p>
               <p><strong>Ambulancia:</strong> {registroSeleccionado.ambulancias?.codigo}</p>
               <p><strong>Paramédico:</strong> {registroSeleccionado.usuarios?.nombre}</p>
@@ -375,83 +539,54 @@ export default function SubadminReportes() {
               )}
             </div>
 
-            <h3 style={{ marginBottom: '1rem' }}>Detalles ({detalles.length}):</h3>
+            <h3 className="detalles-titulo">Detalles ({detalles.length}):</h3>
 
             {cargandoDetalles ? (
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <span style={{ fontSize: '2rem', animation: 'spin 1s linear infinite' }}>⛑️</span>
-                <p>Cargando detalles...</p>
+              <div className="loading-container">
+                <span className="loading-spinner">⛑️</span>
+                <p className="loading-text">Cargando detalles...</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="detalles-lista">
                 {detalles.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
-                    No hay detalles registrados
-                  </p>
+                  <p className="empty-state">No hay detalles registrados</p>
                 ) : (
                   detalles.map((detalle, index) => (
-                    <div key={detalle.id || index} style={{
-                      padding: '1rem',
-                      backgroundColor: '#f9f9f9',
-                      borderRadius: '8px',
-                      border: '1px solid #e0e0e0'
-                    }}>
+                    <div key={detalle.id || index} className="detalle-item">
                       {registroSeleccionado.tipo === 'INICIO' ? (
                         <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <span style={{ fontWeight: 'bold' }}>{detalle.equipo?.nombre || 'Equipo sin nombre'}</span>
-                            <span style={{
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '12px',
-                              fontSize: '0.7rem',
-                              fontWeight: '600',
-                              backgroundColor: detalle.estado ? '#dcfce7' : '#fee2e2',
-                              color: detalle.estado ? '#166534' : '#991b1b'
-                            }}>
+                          <div className="detalle-header">
+                            <span className="detalle-nombre">{detalle.equipo?.nombre || 'Equipo sin nombre'}</span>
+                            <span className={`detalle-badge ${detalle.estado ? 'presente' : 'ausente'}`}>
                               {detalle.estado ? '✓ Presente' : '✗ Ausente'}
                             </span>
                           </div>
                           {detalle.equipo?.descripcion && (
-                            <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.25rem' }}>
-                              {detalle.equipo.descripcion}
-                            </p>
+                            <p className="detalle-descripcion">{detalle.equipo.descripcion}</p>
                           )}
                           {detalle.comentario && (
-                            <p style={{ fontSize: '0.8rem', fontStyle: 'italic', color: '#666', marginTop: '0.25rem' }}>
-                              📝 {detalle.comentario}
-                            </p>
+                            <p className="detalle-comentario">📝 {detalle.comentario}</p>
                           )}
                         </>
                       ) : (
                         <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <span style={{ fontWeight: 'bold' }}>{detalle.insumo?.nombre || 'Insumo sin nombre'}</span>
-                            <span style={{
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '12px',
-                              fontSize: '0.7rem',
-                              fontWeight: '600',
-                              backgroundColor: '#e5e7eb',
-                              color: '#374151'
-                            }}>
+                          <div className="detalle-header">
+                            <span className="detalle-nombre">{detalle.insumo?.nombre || 'Insumo sin nombre'}</span>
+                            <span className="detalle-badge categoria">
                               {detalle.insumo?.categoria || 'Sin categoría'}
                             </span>
                           </div>
                           
                           {detalle.insumo?.descripcion && (
-                            <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>
-                              {detalle.insumo.descripcion}
-                            </p>
+                            <p className="detalle-descripcion">{detalle.insumo.descripcion}</p>
                           )}
                           
-                          <p style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                          <p className="detalle-cantidad">
                             Cantidad registrada: <strong>{detalle.cantidad_registrada}</strong>
                           </p>
                           
                           {detalle.comentario && (
-                            <p style={{ fontSize: '0.8rem', fontStyle: 'italic', color: '#666', marginTop: '0.25rem' }}>
-                              📝 {detalle.comentario}
-                            </p>
+                            <p className="detalle-comentario">📝 {detalle.comentario}</p>
                           )}
                         </>
                       )}
@@ -461,32 +596,21 @@ export default function SubadminReportes() {
               </div>
             )}
 
-            <button
-              onClick={cerrarModal}
-              style={{
-                width: '100%',
-                marginTop: '1.5rem',
-                padding: '0.75rem',
-                backgroundColor: '#b22222',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              Cerrar
-            </button>
+            <div className="modal-actions">
+              {registroSeleccionado.tipo === 'CIERRE' && detalles.length > 0 && (
+                <button onClick={descargarPDF} className="btn-pdf">
+                  <span>📄</span>
+                  Descargar PDF
+                </button>
+              )}
+              
+              <button onClick={cerrarModal} className="btn-cerrar">
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </SubadminLayout>
   )
 }
