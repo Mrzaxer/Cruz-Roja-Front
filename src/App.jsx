@@ -7,6 +7,7 @@ import SubadminAmbulancias from "./components/subadmin/SubadminAmbulancias"
 import SubadminParamedicos from "./components/subadmin/SubadminParamedicos"
 import SubadminInsumosSede from "./components/subadmin/SubadminInsumosSede"
 import SubadminReportes from "./components/subadmin/SubadminReportes"
+import SubadminEquipo from "./components/subadmin/SubadminEquipo"  // NUEVO
 
 // Admin
 import AdminDashboard from './components/admin/AdminDashboard'
@@ -174,6 +175,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['SUBADMIN']}>
                 <SubadminReportes />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* NUEVA RUTA: Gestión de Equipo para Subadmin */}
+          <Route
+            path="/subadmin/equipo"
+            element={
+              <ProtectedRoute allowedRoles={['SUBADMIN']}>
+                <SubadminEquipo />
               </ProtectedRoute>
             }
           />

@@ -6,6 +6,7 @@ import '../../styles/GestionInsumos.css'
 export default function GestionInsumos() {
 
   const [insumos, setInsumos] = useState([])
+  const [sedes, setSedes] = useState([]) // Agregar estado para sedes
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [categoria, setCategoria] = useState('Manejo de Vía Aérea')
@@ -14,7 +15,13 @@ export default function GestionInsumos() {
 
   useEffect(() => {
     cargarInsumos()
+    cargarSedes() // Cargar sedes
   }, [])
+
+  const cargarSedes = async () => {
+    const { data } = await supabase.from('sedes').select('id')
+    setSedes(data || [])
+  }
 
   const cargarInsumos = async () => {
     const { data } = await supabase
@@ -35,7 +42,8 @@ export default function GestionInsumos() {
 
     setCargando(true)
 
-    const { error } = await supabase
+    // 1. Crear el insumo
+    const { data: nuevoInsumo, error: errorInsumo } = await supabase
       .from('insumos')
       .insert([
         {
@@ -46,20 +54,43 @@ export default function GestionInsumos() {
           activo: true
         }
       ])
+      .select()
+      .single()
 
-    if (error) {
-      alert('Error al crear insumo')
-      console.log(error)
-    } else {
-
-      setNombre('')
-      setDescripcion('')
-      setCategoria('Manejo de Vía Aérea')
-      setObligatorioGlobal(true)
-
-      cargarInsumos()
+    if (errorInsumo) {
+      alert('Error al crear insumo: ' + errorInsumo.message)
+      console.log(errorInsumo)
+      setCargando(false)
+      return
     }
 
+    // 2. Insertar configuración por defecto en TODAS las sedes (cantidad = 1, activo = true)
+    if (sedes.length > 0 && nuevoInsumo) {
+      const configsPorSede = sedes.map(sede => ({
+        sede_id: sede.id,
+        insumo_id: nuevoInsumo.id,
+        cantidad_establecida: 1,
+        activo_en_sede: true
+      }))
+
+      const { error: errorConfig } = await supabase
+        .from('insumos_por_sede')
+        .insert(configsPorSede)
+
+      if (errorConfig) {
+        console.error('Error al crear configuraciones por sede:', errorConfig)
+        // No alertamos al usuario porque el insumo ya se creó
+      }
+    }
+
+    alert('Insumo creado correctamente con cantidad 1 en todas las sedes')
+
+    setNombre('')
+    setDescripcion('')
+    setCategoria('Manejo de Vía Aérea')
+    setObligatorioGlobal(true)
+
+    cargarInsumos()
     setCargando(false)
   }
 
@@ -81,7 +112,7 @@ export default function GestionInsumos() {
       <div className="insumos-container">
         
         <div className="insumos-banner">
-          <div className="insumos-banner-icon">💉</div>
+          <div className="insumos-banner-icon">💊</div>
           <div className="insumos-banner-text">
             <h2>Catálogo de Insumos</h2>
             <p>Gestiona los insumos médicos disponibles</p>

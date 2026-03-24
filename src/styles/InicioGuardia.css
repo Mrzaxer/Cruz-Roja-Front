@@ -406,3 +406,137 @@
     font-size: 1.3rem;
   }
 }
+
+/* Badge para número de serie */
+.equipo-serie-badge {
+  display: inline-block;
+  background-color: #e5e7eb;
+  color: #374151;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-family: monospace;
+  margin-left: 0.5rem;
+}
+
+/* Badge para categoría */
+.equipo-categoria {
+  margin-top: 0.25rem;
+}
+
+.categoria-badge {
+  display: inline-block;
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Ajuste del nombre del equipo para que sea más flexible */
+.equipo-nombre {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.equipo-nombre strong {
+  font-size: 1rem;
+  color: #1f2937;
+}
+
+/* Mejora del resumen */
+.resumen-stats {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  background-color: #f9fafb;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.stat-value.completo {
+  color: #10b981;
+}
+
+.stat-value.faltante {
+  color: #ef4444;
+}
+
+/* Estilos para equipos generales con cantidad */
+.equipo-cantidad-establecida {
+  display: inline-block;
+  background-color: #e5e7eb;
+  color: #374151;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.equipo-cantidad-input {
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cantidad-label {
+  font-size: 0.85rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.cantidad-input {
+  width: 120px;
+  padding: 0.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.cantidad-input:focus {
+  outline: none;
+  border-color: #b22222;
+  box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .equipo-cantidad-input {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .cantidad-input {
+    width: 100%;
+  }
+  
+  .equipo-cantidad-establecida {
+    margin-left: 0;
+    margin-top: 0.25rem;
+    display: inline-block;
+  }
+}

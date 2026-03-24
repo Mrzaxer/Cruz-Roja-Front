@@ -19,6 +19,7 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
     { nombre: 'Ambulancias', icono: '🚑', path: '/subadmin/ambulancias' },
     { nombre: 'Paramédicos', icono: '👥', path: '/subadmin/paramedicos' },
     { nombre: 'Insumos por Sede', icono: '💉', path: '/subadmin/insumos-sede' },
+    { nombre: 'Equipo', icono: '🧰', path: '/subadmin/equipo' },
     { nombre: 'Reportes', icono: '📈', path: '/subadmin/reportes' },
   ]
 

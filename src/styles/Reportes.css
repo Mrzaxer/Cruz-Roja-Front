@@ -1,0 +1,794 @@
+/* ===== REPORTES UNIFICADOS ===== */
+:root {
+  --rojo-mexicano: #b22222;
+  --rojo-oscuro: #8b0000;
+  --rojo-claro: #fee2e2;
+  --verde-exito: #10b981;
+  --verde-claro: #d1fae5;
+  --azul-info: #3b82f6;
+  --azul-claro: #dbeafe;
+  --amarillo-advertencia: #f59e0b;
+  --gris-fondo: #f3f4f6;
+  --blanco: #ffffff;
+  --gris-100: #f9fafb;
+  --gris-200: #e5e7eb;
+  --gris-300: #d1d5db;
+  --gris-400: #9ca3af;
+  --gris-500: #6b7280;
+  --gris-600: #4b5563;
+  --gris-700: #374151;
+  --gris-800: #1f2937;
+  --sombra: 0 1px 3px rgba(0,0,0,0.1);
+  --sombra-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --transition: all 0.3s ease;
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.reportes-unificado {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ===== BANNER ===== */
+.reportes-banner {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: white;
+  box-shadow: var(--sombra-lg);
+}
+
+.reportes-banner-icon {
+  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reportes-banner-text h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.reportes-banner-text p {
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+/* ===== PESTAÑAS ===== */
+.reportes-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background-color: var(--blanco);
+  padding: 0.5rem;
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+  border: 1px solid var(--gris-200);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--gris-600);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  color: white;
+  box-shadow: 0 2px 8px rgba(178, 34, 34, 0.2);
+}
+
+.tab-button:hover:not(.active) {
+  background-color: var(--gris-100);
+  color: var(--gris-800);
+}
+
+/* ===== SECCIÓN DE REPORTES ===== */
+.reportes-section {
+  background-color: var(--blanco);
+  border-radius: 20px;
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  border: 1px solid var(--gris-200);
+}
+
+.section-header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, var(--gris-100), var(--blanco));
+  border-bottom: 2px solid var(--gris-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-title span {
+  font-size: 1.5rem;
+}
+
+.section-title h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gris-800);
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ===== FILTROS ===== */
+.filtros-insumos {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--gris-200);
+  box-shadow: var(--sombra);
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filtro-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.filtro-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gris-600);
+}
+
+.filtro-group input,
+.filtro-group select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gris-300);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.filtro-group input:focus,
+.filtro-group select:focus {
+  outline: none;
+  border-color: var(--rojo-mexicano);
+  box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.1);
+}
+
+.filtros-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* ===== BOTONES ===== */
+.btn-excel {
+  background: linear-gradient(135deg, #27ae60, #219a52);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-excel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-limpiar {
+  background-color: var(--gris-200);
+  color: var(--gris-700);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-limpiar:hover {
+  background-color: var(--gris-300);
+}
+
+/* ===== TABLA DE INSUMOS ===== */
+.table-responsive {
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.reportes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reportes-table th {
+  text-align: left;
+  padding: 1rem;
+  background-color: var(--gris-100);
+  font-weight: 600;
+  color: var(--gris-600);
+  border-bottom: 2px solid var(--gris-200);
+}
+
+.reportes-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gris-200);
+  color: var(--gris-700);
+}
+
+.reportes-table tr:hover {
+  background-color: var(--gris-100);
+}
+
+/* Cantidades */
+.cantidad-cell {
+  font-weight: 600;
+  text-align: center;
+}
+
+.cantidad-cell.establecido {
+  color: var(--azul-info);
+}
+
+.cantidad-cell.registrado {
+  color: var(--verde-exito);
+}
+
+.cantidad-cell.solicitado {
+  color: var(--rojo-mexicano);
+  font-weight: 700;
+}
+
+.comentario-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== RESUMEN DE INSUMOS ===== */
+.resumen-insumos {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--gris-100);
+  border-radius: 12px;
+}
+
+.resumen-insumos h4 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--gris-700);
+}
+
+.resumen-grid-insumos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.resumen-card-insumo {
+  background: white;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gris-200);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.resumen-card-insumo:hover {
+  border-color: var(--rojo-mexicano);
+  box-shadow: var(--sombra);
+  transform: translateY(-2px);
+}
+
+.resumen-insumo-nombre {
+  font-weight: 600;
+  color: var(--gris-800);
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 100px;
+}
+
+.resumen-insumo-categoria {
+  font-size: 0.7rem;
+  background-color: var(--azul-claro);
+  color: var(--azul-info);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+.resumen-insumo-cantidades {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cantidad-item {
+  display: flex;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.cantidad-item .cantidad-label {
+  color: var(--gris-500);
+}
+
+.cantidad-item .cantidad-valor {
+  font-weight: 600;
+}
+
+.cantidad-item .cantidad-valor.establecido {
+  color: var(--azul-info);
+}
+
+.cantidad-item .cantidad-valor.registrado {
+  color: var(--verde-exito);
+}
+
+.cantidad-item .cantidad-valor.solicitado {
+  color: var(--rojo-mexicano);
+}
+
+.resumen-insumo-registros {
+  display: flex;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+}
+
+.registros-label {
+  color: var(--gris-500);
+}
+
+.registros-valor {
+  font-weight: 600;
+  color: var(--gris-700);
+}
+
+/* ===== GRID DE REPORTES DE EQUIPO ===== */
+.reportes-grid-equipo {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1rem;
+}
+
+.reporte-equipo-card {
+  background-color: var(--gris-100);
+  border: 1px solid var(--gris-200);
+  border-radius: 16px;
+  padding: 1rem;
+  transition: var(--transition);
+}
+
+.reporte-equipo-card:hover {
+  border-color: var(--rojo-mexicano);
+  box-shadow: var(--sombra);
+  transform: translateY(-2px);
+}
+
+.reporte-equipo-card.pendiente {
+  border-left: 4px solid #991b1b;
+}
+
+.reporte-equipo-card.en_revision {
+  border-left: 4px solid #ca8a04;
+}
+
+.reporte-equipo-card.resuelto {
+  border-left: 4px solid #166534;
+}
+
+.reporte-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reporte-tipo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--blanco);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.tipo-icono {
+  font-size: 1rem;
+}
+
+.tipo-texto {
+  color: var(--gris-700);
+}
+
+.reporte-estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.reporte-equipo {
+  margin-bottom: 0.5rem;
+}
+
+.reporte-equipo strong {
+  font-size: 1rem;
+  color: var(--gris-800);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.serie {
+  font-size: 0.8rem;
+  color: var(--gris-500);
+  font-family: monospace;
+}
+
+.reporte-ubicacion {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--gris-600);
+  flex-wrap: wrap;
+}
+
+.reporte-descripcion {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background-color: var(--blanco);
+  border-radius: 8px;
+}
+
+.reporte-descripcion strong {
+  font-size: 0.8rem;
+  color: var(--gris-600);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.reporte-descripcion p {
+  font-size: 0.9rem;
+  color: var(--gris-700);
+  line-height: 1.4;
+}
+
+.reporte-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--gris-500);
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reporte-respuesta {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--azul-claro);
+  border-radius: 8px;
+}
+
+.reporte-respuesta strong {
+  font-size: 0.75rem;
+  color: var(--azul-info);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.reporte-respuesta p {
+  font-size: 0.85rem;
+  color: var(--gris-700);
+}
+
+.reporte-resolucion {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--verde-exito);
+  text-align: right;
+}
+
+/* ===== BOTÓN EDITAR REPORTE ===== */
+.btn-editar-reporte {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.btn-editar-reporte:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background-color: var(--blanco);
+  border-radius: 20px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--sombra-lg);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gris-800);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--gris-200);
+}
+
+.reporte-info-modal {
+  background-color: var(--gris-100);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.reporte-info-modal p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.reporte-info-modal strong {
+  color: var(--gris-700);
+  min-width: 100px;
+  display: inline-block;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-cancel {
+  background-color: var(--gris-200);
+  color: var(--gris-700);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.btn-cancel:hover {
+  background-color: var(--gris-300);
+}
+
+.btn-save {
+  background: linear-gradient(135deg, var(--rojo-mexicano), var(--rojo-oscuro));
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.btn-save:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(178, 34, 34, 0.3);
+}
+
+/* ===== LOADING ===== */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.loading-spinner {
+  text-align: center;
+}
+
+.loading-spinner span {
+  font-size: 2.5rem;
+  animation: spin 1s linear infinite;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--gris-500);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .reportes-grid-equipo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .reportes-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .reportes-tabs {
+    flex-direction: column;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .section-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .filtro-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filtro-group select {
+    flex: 1;
+  }
+  
+  .btn-excel,
+  .btn-limpiar {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .reportes-grid-equipo {
+    grid-template-columns: 1fr;
+  }
+  
+  .filtros-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filtros-actions {
+    flex-direction: column;
+  }
+  
+  .resumen-grid-insumos {
+    grid-template-columns: 1fr;
+  }
+  
+  .reportes-table th,
+  .reportes-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .reporte-info {
+    flex-direction: column;
+  }
+  
+  .reporte-ubicacion {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .resumen-insumo-cantidades {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .resumen-card-insumo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+}
