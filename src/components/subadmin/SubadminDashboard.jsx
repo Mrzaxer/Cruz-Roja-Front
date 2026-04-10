@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import SubadminLayout from "../layout/SubadminLayout"
 import "../../styles/Subadmindashboard.css"
 
+
 export default function SubadminDashboard() {
   const { user } = useAuth()
   const [ambulancias, setAmbulancias] = useState([])
