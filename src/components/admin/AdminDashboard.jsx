@@ -45,7 +45,7 @@ export default function AdminDashboard() {
     return (
       <AdminLayout titulo="Panel de Administración">
         <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-          <div style={{ fontSize: '3rem', animation: 'spin 1s linear infinite' }}>⛑️</div>
+          <div style={{ fontSize: '3rem', animation: 'spin 1s linear infinite' }}>⟳</div>
         </div>
       </AdminLayout>
     )
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
         <div className="stat-card red">
           <div className="stat-content">
             <div className="stat-info">
-              <div className="stat-label">SEDES</div>
+              <div className="stat-label">Sedes</div>
               <div className="stat-value">{stats.sedes}</div>
             </div>
             <div className="stat-icon red">🏢</div>
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
         <div className="stat-card blue">
           <div className="stat-content">
             <div className="stat-info">
-              <div className="stat-label">USUARIOS</div>
+              <div className="stat-label">Usuarios</div>
               <div className="stat-value">{stats.usuarios}</div>
             </div>
             <div className="stat-icon blue">👥</div>
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
         <div className="stat-card green">
           <div className="stat-content">
             <div className="stat-info">
-              <div className="stat-label">AMBULANCIAS</div>
+              <div className="stat-label">Ambulancias</div>
               <div className="stat-value">{stats.ambulancias}</div>
             </div>
             <div className="stat-icon green">🚑</div>
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
         <div className="stat-card yellow">
           <div className="stat-content">
             <div className="stat-info">
-              <div className="stat-label">ACTIVAS</div>
+              <div className="stat-label">Activas</div>
               <div className="stat-value">{stats.activas}</div>
             </div>
             <div className="stat-icon yellow">✅</div>
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
         <div className="stat-card purple">
           <div className="stat-content">
             <div className="stat-info">
-              <div className="stat-label">REGISTROS HOY</div>
+              <div className="stat-label">Registros hoy</div>
               <div className="stat-value">{stats.registrosHoy}</div>
             </div>
             <div className="stat-icon purple">📋</div>

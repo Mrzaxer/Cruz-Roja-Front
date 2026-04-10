@@ -112,7 +112,7 @@ export default function GestionInsumos() {
       <div className="insumos-container">
         
         <div className="insumos-banner">
-          <div className="insumos-banner-icon">💊</div>
+          <div className="insumos-banner-icon">💉</div>
           <div className="insumos-banner-text">
             <h2>Catálogo de Insumos</h2>
             <p>Gestiona los insumos médicos disponibles</p>

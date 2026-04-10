@@ -342,6 +342,13 @@
   transform: translateY(-2px);
 }
 
+
+.resumen-card-insumo:hover {
+  border-color: var(--rojo-mexicano);
+  box-shadow: var(--sombra);
+  transform: translateY(-2px);
+}
+
 .resumen-insumo-nombre {
   font-weight: 600;
   color: var(--gris-800);

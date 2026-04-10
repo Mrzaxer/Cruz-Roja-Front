@@ -17,6 +17,26 @@ export default function SubadminDashboard() {
 
   const navigate = useNavigate()
 
+  // Función para formatear fecha a GMT-6 (hora centro de México)
+  const formatearFechaGMT6 = (fechaISO) => {
+    if (!fechaISO) return ''
+    const fecha = new Date(fechaISO)
+    // Obtener la hora en GMT-6
+    const offset = -6
+    const utc = fecha.getTime() + (fecha.getTimezoneOffset() * 60000)
+    const fechaGMT6 = new Date(utc + (offset * 3600000))
+    return fechaGMT6
+  }
+
+  // Función para obtener fecha actual en GMT-6 para comparaciones
+  const getFechaGMT6 = () => {
+    const now = new Date()
+    const offset = -6
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+    const fechaGMT6 = new Date(utc + (offset * 3600000))
+    return fechaGMT6
+  }
+
   useEffect(() => {
     if (user?.sede_id) {
       cargarDatos()
@@ -87,7 +107,7 @@ export default function SubadminDashboard() {
     ).length
     setReportesPendientes(pendientes)
 
-    // Actividades recientes de la sede
+    // Actividades recientes de la sede (con fecha en GMT-6)
     const { data: registros } = await supabase
       .from("registros")
       .select("*, ambulancias(codigo), usuarios(nombre)")
@@ -96,11 +116,14 @@ export default function SubadminDashboard() {
       .limit(10)
 
     setActividadesRecientes(
-      (registros || []).map(r => ({
-        id: r.id,
-        texto: `${r.usuarios?.nombre} realizó ${r.tipo} en ambulancia ${r.ambulancias?.codigo}`,
-        tiempo: new Date(r.fecha).toLocaleString()
-      }))
+      (registros || []).map(r => {
+        const fechaGMT6 = formatearFechaGMT6(r.fecha)
+        return {
+          id: r.id,
+          texto: `${r.usuarios?.nombre} realizó ${r.tipo} en ambulancia ${r.ambulancias?.codigo}`,
+          tiempo: fechaGMT6.toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })
+        }
+      })
     )
 
     // Generar notificaciones incluyendo reportes resueltos
@@ -109,6 +132,8 @@ export default function SubadminDashboard() {
 
   const generarNotificaciones = (ambulanciasData, equiposData, insumosConfig, reportesData) => {
     const notificacionesList = []
+    const ahoraGMT6 = getFechaGMT6()
+    const hace24Horas = new Date(ahoraGMT6.getTime() - 24 * 60 * 60 * 1000)
 
     // 1. Insumos pendientes de configuración
     if (insumosPendientes > 0) {
@@ -119,7 +144,7 @@ export default function SubadminDashboard() {
         titulo: "Insumos sin configurar",
         mensaje: `${insumosPendientes} insumo(s) requieren configuración de cantidad`,
         accion: () => navigate("/subadmin/insumos-sede"),
-        fecha: new Date().toISOString()
+        fecha: ahoraGMT6.toISOString()
       })
     }
 
@@ -132,27 +157,27 @@ export default function SubadminDashboard() {
         titulo: "Reportes pendientes",
         mensaje: `${reportesPendientes} reporte(s) de equipo esperan atención`,
         accion: () => navigate("/subadmin/equipo"),
-        fecha: new Date().toISOString()
+        fecha: ahoraGMT6.toISOString()
       })
     }
 
-    // 3. Reportes resueltos recientemente (últimas 24 horas)
+    // 3. Reportes resueltos recientemente (últimas 24 horas en GMT-6)
     const reportesResueltos = (reportesData || []).filter(r => {
       if (r.estado !== "RESUELTO") return false
-      const fechaResolucion = new Date(r.fecha_resolucion)
-      const hace24Horas = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const fechaResolucion = formatearFechaGMT6(r.fecha_resolucion)
       return fechaResolucion > hace24Horas
     })
 
     reportesResueltos.forEach(reporte => {
+      const fechaResolucion = formatearFechaGMT6(reporte.fecha_resolucion)
       notificacionesList.push({
         id: `resuelto_${reporte.id}`,
         tipo: "success",
         icono: "✅",
         titulo: "Reporte resuelto",
-        mensaje: `El reporte de ${reporte.equipo?.modelo?.nombre} (N° ${reporte.equipo?.numero_serie || 'general'}) fue resuelto. ${reporte.comentario_admin ? `Comentario: ${reporte.comentario_admin}` : ''}`,
+        mensaje: `El reporte de ${reporte.equipo?.modelo?.nombre || reporte.equipo?.nombre || 'equipo'} (N° ${reporte.equipo?.numero_serie || 'general'}) fue resuelto. ${reporte.comentario_admin ? `Comentario: ${reporte.comentario_admin}` : ''}`,
         accion: () => navigate("/subadmin/equipo"),
-        fecha: reporte.fecha_resolucion,
+        fecha: fechaResolucion.toISOString(),
         leida: false
       })
     })
@@ -167,7 +192,7 @@ export default function SubadminDashboard() {
         titulo: "Equipos en mantenimiento",
         mensaje: `${equiposEnMantenimiento} equipo(s) están en mantenimiento`,
         accion: () => navigate("/subadmin/equipo"),
-        fecha: new Date().toISOString()
+        fecha: ahoraGMT6.toISOString()
       })
     }
 
@@ -181,7 +206,7 @@ export default function SubadminDashboard() {
         titulo: "Equipos inactivos",
         mensaje: `${equiposInactivos} equipo(s) están inactivos`,
         accion: () => navigate("/subadmin/equipo"),
-        fecha: new Date().toISOString()
+        fecha: ahoraGMT6.toISOString()
       })
     }
 
@@ -195,7 +220,7 @@ export default function SubadminDashboard() {
         titulo: "Ambulancias en mantenimiento",
         mensaje: `${ambulanciasMantenimiento} ambulancia(s) están en mantenimiento`,
         accion: () => navigate("/subadmin/ambulancias"),
-        fecha: new Date().toISOString()
+        fecha: ahoraGMT6.toISOString()
       })
     }
 
@@ -209,7 +234,7 @@ export default function SubadminDashboard() {
         titulo: "Ambulancias inactivas",
         mensaje: `${ambulanciasInactivas} ambulancia(s) están inactivas`,
         accion: () => navigate("/subadmin/ambulancias"),
-        fecha: new Date().toISOString()
+        fecha: ahoraGMT6.toISOString()
       })
     }
 
@@ -232,6 +257,29 @@ export default function SubadminDashboard() {
       case "info": return { bg: "#dbeafe", border: "#2563eb", icon: "#3b82f6" }
       case "success": return { bg: "#dcfce7", border: "#166534", icon: "#10b981" }
       default: return { bg: "#f3f4f6", border: "#6b7280", icon: "#6b7280" }
+    }
+  }
+
+  // Función para formatear fecha de notificación
+  const formatearFechaNotificacion = (fechaISO) => {
+    const fecha = formatearFechaGMT6(fechaISO)
+    const ahora = getFechaGMT6()
+    const diffHoras = Math.floor((ahora - fecha) / (1000 * 60 * 60))
+    
+    if (diffHoras < 1) {
+      const diffMinutos = Math.floor((ahora - fecha) / (1000 * 60))
+      if (diffMinutos < 1) return 'Hace unos segundos'
+      return `Hace ${diffMinutos} minuto${diffMinutos !== 1 ? 's' : ''}`
+    } else if (diffHoras < 24) {
+      return `Hace ${diffHoras} hora${diffHoras !== 1 ? 's' : ''}`
+    } else {
+      return fecha.toLocaleDateString('es-MX', { 
+        day: 'numeric', 
+        month: 'short', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'America/Mexico_City'
+      })
     }
   }
 
@@ -281,7 +329,7 @@ export default function SubadminDashboard() {
                       <h4>{notif.titulo}</h4>
                       <p>{notif.mensaje}</p>
                       <span className="notificacion-fecha">
-                        {new Date(notif.fecha).toLocaleDateString()} {new Date(notif.fecha).toLocaleTimeString()}
+                        {formatearFechaNotificacion(notif.fecha)}
                       </span>
                     </div>
                     <div className="notificacion-card-arrow">→</div>

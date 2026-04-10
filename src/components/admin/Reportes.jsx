@@ -7,7 +7,8 @@ export default function Reportes() {
   const [vista, setVista] = useState("insumos")
   const [insumosData, setInsumosData] = useState([])
   const [reportesEquipo, setReportesEquipo] = useState([])
-  const [cargando, setCargando] = useState({ insumos: true, equipo: true })
+  const [cargandoInsumos, setCargandoInsumos] = useState(true)
+  const [cargandoEquipo, setCargandoEquipo] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState("")
   
   // Filtros para insumos
@@ -18,10 +19,9 @@ export default function Reportes() {
   const [paramedicoId, setParamedicoId] = useState("")
   const [sedes, setSedes] = useState([])
   const [ambulancias, setAmbulancias] = useState([])
+  const [ambulanciasFiltradas, setAmbulanciasFiltradas] = useState([])
   const [paramedicos, setParamedicos] = useState([])
-  
-  // Resumen por insumo
-  const [resumenInsumos, setResumenInsumos] = useState([])
+  const [paramedicosFiltrados, setParamedicosFiltrados] = useState([])
   
   // Modal de edición de reporte
   const [modalReporte, setModalReporte] = useState(false)
@@ -40,18 +40,54 @@ export default function Reportes() {
     } else {
       cargarReportesEquipo()
     }
-  }, [fechaI, fechaF, sedeId, ambulanciaId, paramedicoId])
+  }, [vista, fechaI, fechaF, sedeId, ambulanciaId, paramedicoId])
+
+  // Filtrar ambulancias cuando cambia la sede
+  useEffect(() => {
+    if (sedeId) {
+      const filtradas = ambulancias.filter(a => a.sede_id === parseInt(sedeId))
+      setAmbulanciasFiltradas(filtradas)
+      if (ambulanciaId && !filtradas.some(a => a.id === parseInt(ambulanciaId))) {
+        setAmbulanciaId("")
+      }
+    } else {
+      setAmbulanciasFiltradas(ambulancias)
+    }
+  }, [sedeId, ambulancias, ambulanciaId])
+
+  // Filtrar paramédicos cuando cambia la sede
+  useEffect(() => {
+    if (sedeId) {
+      const filtrados = paramedicos.filter(p => p.sede_id === parseInt(sedeId))
+      setParamedicosFiltrados(filtrados)
+      if (paramedicoId && !filtrados.some(p => p.id === parseInt(paramedicoId))) {
+        setParamedicoId("")
+      }
+    } else {
+      setParamedicosFiltrados(paramedicos)
+    }
+  }, [sedeId, paramedicos, paramedicoId])
 
   const cargarCatalogos = async () => {
     try {
       const { data: sedesData } = await supabase.from("sedes").select("*").order("nombre")
       setSedes(sedesData || [])
       
-      const { data: ambulanciasData } = await supabase.from("ambulancias").select("id, codigo").order("codigo")
+      const { data: ambulanciasData } = await supabase
+        .from("ambulancias") 
+        .select("id, codigo, sede_id")
+        .order("codigo")
       setAmbulancias(ambulanciasData || [])
+      setAmbulanciasFiltradas(ambulanciasData || [])
       
-      const { data: paramedicosData } = await supabase.from("usuarios").select("id, nombre").eq("rol", "PARAMEDICO").order("nombre")
+      const { data: paramedicosData } = await supabase
+        .from("usuarios") 
+        .select("id, nombre, sede_id")
+        .eq("rol", "PARAMEDICO")
+        .order("nombre")
       setParamedicos(paramedicosData || [])
+      setParamedicosFiltrados(paramedicosData || [])
+      
     } catch (error) {
       console.error("Error cargando catálogos:", error)
     }
@@ -59,7 +95,7 @@ export default function Reportes() {
 
   // ==================== CARGA DE DATOS CON FILTROS ====================
   const cargarInsumos = async () => {
-    setCargando(prev => ({ ...prev, insumos: true }))
+    setCargandoInsumos(true)
     
     try {
       let query = supabase
@@ -102,68 +138,55 @@ export default function Reportes() {
       if (error) {
         console.error("Error cargando insumos:", error)
         setInsumosData([])
-        setCargando(prev => ({ ...prev, insumos: false }))
         return
       }
       
       if (data && data.length > 0) {
-        const dataConCalculo = data.map(item => ({
+        // Primero, obtener todos los IDs únicos de paramédicos y ambulancias
+        const paramedicoIds = [...new Set(data.map(item => item.registros?.paramedico_id).filter(id => id))]
+        const ambulanciaIds = [...new Set(data.map(item => item.registros?.ambulancia_id).filter(id => id))]
+        
+        // Obtener los nombres de los paramédicos
+        const { data: paramedicosData } = await supabase
+          .from("usuarios")
+          .select("id, nombre")
+          .in("id", paramedicoIds)
+        
+        // Obtener los códigos de las ambulancias
+        const { data: ambulanciasData } = await supabase
+          .from("ambulancias")
+          .select("id, codigo")
+          .in("id", ambulanciaIds)
+        
+        // Crear mapas para acceso rápido
+        const paramedicosMap = {}
+        paramedicosData?.forEach(p => { paramedicosMap[p.id] = p.nombre })
+        
+        const ambulanciasMap = {}
+        ambulanciasData?.forEach(a => { ambulanciasMap[a.id] = a.codigo })
+        
+        // Enriquecer los datos con nombres y códigos
+        const dataConNombres = data.map(item => ({
           ...item,
-          cantidad_solicitada: Math.max(0, (item.cantidad_establecida || 1) - (item.cantidad_registrada || 0))
+          cantidad_solicitada: Math.max(0, (item.cantidad_establecida || 1) - (item.cantidad_registrada || 0)),
+          paramedico_nombre: paramedicosMap[item.registros?.paramedico_id] || `ID: ${item.registros?.paramedico_id}`,
+          ambulancia_codigo: ambulanciasMap[item.registros?.ambulancia_id] || `ID: ${item.registros?.ambulancia_id}`
         }))
         
-        setInsumosData(dataConCalculo)
-        calcularResumenInsumos(dataConCalculo)
+        setInsumosData(dataConNombres)
       } else {
         setInsumosData([])
-        setResumenInsumos([])
       }
     } catch (error) {
       console.error("Error en cargarInsumos:", error)
       setInsumosData([])
     } finally {
-      setCargando(prev => ({ ...prev, insumos: false }))
+      setCargandoInsumos(false)
     }
-  }
-
-  const calcularResumenInsumos = (data) => {
-    if (!data || data.length === 0) {
-      setResumenInsumos([])
-      return
-    }
-    
-    const resumen = {}
-    data.forEach(item => {
-      const insumoId = item.insumo_id
-      const insumoNombre = item.insumos?.nombre || "Desconocido"
-      const categoria = item.insumos?.categoria || "Sin categoría"
-      const cantidadRegistrada = item.cantidad_registrada || 0
-      const cantidadEstablecida = item.cantidad_establecida ?? 1
-      const cantidadSolicitada = Math.max(0, cantidadEstablecida - cantidadRegistrada)
-      
-      if (!resumen[insumoId]) {
-        resumen[insumoId] = {
-          id: insumoId,
-          nombre: insumoNombre,
-          categoria: categoria,
-          total_registrado: 0,
-          total_establecido: 0,
-          total_solicitado: 0,
-          registros: 0
-        }
-      }
-      resumen[insumoId].total_registrado += cantidadRegistrada
-      resumen[insumoId].total_establecido += cantidadEstablecida
-      resumen[insumoId].total_solicitado += cantidadSolicitada
-      resumen[insumoId].registros += 1
-    })
-    
-    const resumenArray = Object.values(resumen).sort((a, b) => b.total_solicitado - a.total_solicitado)
-    setResumenInsumos(resumenArray)
   }
 
   const cargarReportesEquipo = async () => {
-    setCargando(prev => ({ ...prev, equipo: true }))
+    setCargandoEquipo(true)
     
     try {
       const { data, error } = await supabase
@@ -171,7 +194,13 @@ export default function Reportes() {
         .select(`
           *,
           equipo:equipos(
-            *,
+            id,
+            tipo,
+            nombre,
+            descripcion,
+            categoria,
+            cantidad,
+            numero_serie,
             modelo:modelos_equipo(id, nombre, descripcion, categoria),
             ambulancia:ambulancias(codigo, placa),
             sede:sedes(nombre)
@@ -180,18 +209,59 @@ export default function Reportes() {
         `)
         .in("tipo_reporte", ["EQUIPO", "CONSUMIBLE"])
         .order("fecha_reporte", { ascending: false })
+        .limit(100)
   
       if (error) {
         console.error("Error cargando reportes equipo:", error)
         setReportesEquipo([])
       } else {
-        setReportesEquipo(data || [])
+        const reportesFormateados = (data || []).map(reporte => {
+          const equipo = reporte.equipo
+          
+          if (!equipo) return reporte
+          
+          let nombreEquipo = ""
+          let descripcionEquipo = ""
+          let categoriaEquipo = ""
+          let numeroSerie = null
+          let esGeneral = false
+          
+          if (equipo.tipo === "GENERAL") {
+            esGeneral = true
+            nombreEquipo = equipo.nombre || "Equipo sin nombre"
+            descripcionEquipo = equipo.descripcion || ""
+            categoriaEquipo = equipo.categoria || ""
+          } else {
+            nombreEquipo = equipo.modelo?.nombre || "Equipo sin modelo"
+            descripcionEquipo = equipo.modelo?.descripcion || ""
+            categoriaEquipo = equipo.modelo?.categoria || ""
+            numeroSerie = equipo.numero_serie
+          }
+          
+          return {
+            ...reporte,
+            equipo_info: {
+              id: equipo.id,
+              tipo: equipo.tipo,
+              nombre: nombreEquipo,
+              descripcion: descripcionEquipo,
+              categoria: categoriaEquipo,
+              numero_serie: numeroSerie,
+              cantidad: equipo.cantidad,
+              es_general: esGeneral,
+              sede: equipo.sede,
+              ambulancia: equipo.ambulancia
+            }
+          }
+        })
+        
+        setReportesEquipo(reportesFormateados)
       }
     } catch (error) {
       console.error("Error en cargarReportesEquipo:", error)
       setReportesEquipo([])
     } finally {
-      setCargando(prev => ({ ...prev, equipo: false }))
+      setCargandoEquipo(false)
     }
   }
 
@@ -252,15 +322,9 @@ export default function Reportes() {
         return
       }
 
-      let csv = "Registro,Sede,Fecha,Paramédico,Ambulancia,Insumo,Cantidad Establecida,Cantidad Registrada,Cantidad Solicitada,Comentario\n"
+      let csv = "Registro,Sede,Fecha,Paramédico,Ambulancia,Insumo,Cantidad Establecida,Cantidad Registrada,Cantidad Solicitada\n"
       insumosData.forEach(d => {
-        csv += `${d.registros?.id || ""},${d.registros?.sedes?.nombre || ""},${d.registros?.fecha || ""},${d.registros?.paramedico_id || ""},${d.registros?.ambulancia_id || ""},${d.insumos?.nombre || ""},${d.cantidad_establecida ?? 1},${d.cantidad_registrada || 0},${d.cantidad_solicitada ?? 0},${d.comentario || ""}\n`
-      })
-      
-      csv += "\n\n=== RESUMEN POR INSUMO ===\n"
-      csv += "Insumo,Categoría,Total Establecido,Total Registrado,Total Solicitado,Registros\n"
-      resumenInsumos.forEach(r => {
-        csv += `${r.nombre},${r.categoria},${r.total_establecido},${r.total_registrado},${r.total_solicitado},${r.registros}\n`
+        csv += `${d.registros?.id || ""},${d.registros?.sedes?.nombre || ""},${d.registros?.fecha || ""},${d.paramedico_nombre || ""},${d.ambulancia_codigo || ""},${d.insumos?.nombre || ""},${d.cantidad_establecida ?? 1},${d.cantidad_registrada || 0},${d.cantidad_solicitada ?? 0}\n`
       })
       
       descargarArchivo(csv, "reporte_insumos.csv")
@@ -270,9 +334,13 @@ export default function Reportes() {
         return
       }
 
-      let csv = "ID,Equipo,Sede,Ambulancia,Tipo,Descripción,Estado,Reportado por,Fecha,Comentario Admin\n"
+      let csv = "ID,Equipo,Tipo,Sede,Ambulancia,Tipo Reporte,Descripción,Estado,Reportado por,Fecha,Comentario Admin\n"
       reportesEquipo.forEach(r => {
-        csv += `${r.id},${r.equipo?.modelo?.nombre || ""},${r.equipo?.sede?.nombre || ""},${r.equipo?.ambulancia?.codigo || "No asignada"},${r.tipo_reporte},${r.descripcion},${r.estado},${r.subadmin?.nombre || ""},${r.fecha_reporte},${r.comentario_admin || ""}\n`
+        const equipoInfo = r.equipo_info || r.equipo
+        const nombreEquipo = equipoInfo?.nombre || "Equipo sin nombre"
+        const tipoEquipo = equipoInfo?.tipo === "GENERAL" ? "General" : "Individual"
+        const numeroSerie = equipoInfo?.numero_serie ? ` (${equipoInfo.numero_serie})` : ""
+        csv += `${r.id},${nombreEquipo}${numeroSerie},${tipoEquipo},${equipoInfo?.sede?.nombre || ""},${equipoInfo?.ambulancia?.codigo || "No asignada"},${r.tipo_reporte},${r.descripcion},${r.estado},${r.subadmin?.nombre || ""},${r.fecha_reporte},${r.comentario_admin || ""}\n`
       })
       descargarArchivo(csv, "reporte_equipo.csv")
     }
@@ -375,14 +443,14 @@ export default function Reportes() {
                   <label>Ambulancia</label>
                   <select value={ambulanciaId} onChange={(e) => setAmbulanciaId(e.target.value)}>
                     <option value="">Todas las ambulancias</option>
-                    {ambulancias.map(a => <option key={a.id} value={a.id}>{a.codigo}</option>)}
+                    {ambulanciasFiltradas.map(a => <option key={a.id} value={a.id}>{a.codigo}</option>)}
                   </select>
                 </div>
                 <div className="filtro-group">
                   <label>Paramédico</label>
                   <select value={paramedicoId} onChange={(e) => setParamedicoId(e.target.value)}>
                     <option value="">Todos los paramédicos</option>
-                    {paramedicos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                    {paramedicosFiltrados.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                   </select>
                 </div>
               </div>
@@ -404,43 +472,10 @@ export default function Reportes() {
               </div>
             </div>
 
-            {/* Resumen por insumo */}
-            {resumenInsumos.length > 0 && (
-              <div className="resumen-insumos">
-                <h4>📊 Resumen de consumo por insumo</h4>
-                <div className="resumen-grid-insumos">
-                  {resumenInsumos.map(insumo => (
-                    <div key={insumo.id} className="resumen-card-insumo">
-                      <div className="resumen-insumo-nombre">{insumo.nombre}</div>
-                      <div className="resumen-insumo-categoria">{insumo.categoria}</div>
-                      <div className="resumen-insumo-cantidades">
-                        <div className="cantidad-item">
-                          <span className="cantidad-label">Establecido:</span>
-                          <span className="cantidad-valor establecido">{insumo.total_establecido}</span>
-                        </div>
-                        <div className="cantidad-item">
-                          <span className="cantidad-label">Registrado:</span>
-                          <span className="cantidad-valor registrado">{insumo.total_registrado}</span>
-                        </div>
-                        <div className="cantidad-item">
-                          <span className="cantidad-label">Solicitado:</span>
-                          <span className="cantidad-valor solicitado">{insumo.total_solicitado}</span>
-                        </div>
-                      </div>
-                      <div className="resumen-insumo-registros">
-                        <span className="registros-label">Registros:</span>
-                        <span className="registros-valor">{insumo.registros}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tabla de detalles */}
-            {cargando.insumos ? (
+            {/* Tabla de detalles - CON NOMBRES REALES */}
+            {cargandoInsumos ? (
               <div className="loading-container">
-                <div className="loading-spinner"><span>⛑️</span><p>Cargando datos...</p></div>
+                <div className="loading-spinner"><span>⟳</span><p>Cargando datos...</p></div>
               </div>
             ) : insumosData.length === 0 ? (
               <div className="empty-state">
@@ -452,8 +487,15 @@ export default function Reportes() {
                 <table className="reportes-table">
                   <thead>
                     <tr>
-                      <th>Registro</th><th>Sede</th><th>Fecha</th><th>Paramédico</th><th>Ambulancia</th><th>Insumo</th>
-                      <th>Establecido</th><th>Registrado</th><th>Solicitado</th><th>Comentario</th>
+                      <th>Registro</th>
+                      <th>Sede</th>
+                      <th>Fecha</th>
+                      <th>Paramédico</th>
+                      <th>Ambulancia</th>
+                      <th>Insumo</th>
+                      <th>Establecido</th>
+                      <th>Registrado</th>
+                      <th>Solicitado</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -462,13 +504,12 @@ export default function Reportes() {
                         <td>{d.registros?.id}</td>
                         <td>{d.registros?.sedes?.nombre}</td>
                         <td>{new Date(d.registros?.fecha).toLocaleString()}</td>
-                        <td>{d.registros?.paramedico_id}</td>
-                        <td>{d.registros?.ambulancia_id}</td>
+                        <td><strong>{d.paramedico_nombre}</strong></td>
+                        <td>{d.ambulancia_codigo}</td>
                         <td>{d.insumos?.nombre}</td>
                         <td className="cantidad-cell establecido">{d.cantidad_establecida ?? 1}</td>
                         <td className="cantidad-cell registrado">{d.cantidad_registrada || 0}</td>
                         <td className="cantidad-cell solicitado">{d.cantidad_solicitada ?? 0}</td>
-                        <td className="comentario-cell">{d.comentario || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -502,9 +543,9 @@ export default function Reportes() {
               </div>
             </div>
 
-            {cargando.equipo ? (
+            {cargandoEquipo ? (
               <div className="loading-container">
-                <div className="loading-spinner"><span>⛑️</span><p>Cargando reportes...</p></div>
+                <div className="loading-spinner"><span>⟳</span><p>Cargando reportes...</p></div>
               </div>
             ) : reportesFiltrados.length === 0 ? (
               <div className="empty-state"><span className="empty-icon">✅</span><p>No hay reportes de equipo</p></div>
@@ -512,6 +553,9 @@ export default function Reportes() {
               <div className="reportes-grid-equipo">
                 {reportesFiltrados.map(reporte => {
                   const estadoStyle = getEstadoColor(reporte.estado)
+                  const equipoInfo = reporte.equipo_info || reporte.equipo
+                  const esGeneral = equipoInfo?.tipo === "GENERAL"
+                  
                   return (
                     <div key={reporte.id} className={`reporte-equipo-card ${reporte.estado.toLowerCase()}`}>
                       <div className="reporte-header">
@@ -523,17 +567,32 @@ export default function Reportes() {
                       </div>
 
                       <div className="reporte-equipo">
-                        <strong>{reporte.equipo?.modelo?.nombre}</strong>
-                        <span className="serie">N° Serie: {reporte.equipo?.numero_serie}</span>
+                        <strong>{equipoInfo?.nombre || "Equipo sin nombre"}</strong>
+                        {!esGeneral && equipoInfo?.numero_serie && (
+                          <span className="serie">N° Serie: {equipoInfo.numero_serie}</span>
+                        )}
+                        {esGeneral && equipoInfo?.cantidad && (
+                          <span className="cantidad-badge">Cantidad: {equipoInfo.cantidad} unidades</span>
+                        )}
+                        {equipoInfo?.categoria && (
+                          <span className="categoria-badge">{equipoInfo.categoria}</span>
+                        )}
                       </div>
 
                       <div className="reporte-ubicacion">
-                        <span>🏢 Sede: {reporte.equipo?.sede?.nombre}</span>
-                        <span>🚑 Ambulancia: {reporte.equipo?.ambulancia?.codigo || "No asignada"}</span>
+                        <span>🏢 Sede: {equipoInfo?.sede?.nombre || "Sin sede"}</span>
+                        <span>🚑 Ambulancia: {equipoInfo?.ambulancia?.codigo || "No asignada"}</span>
                       </div>
 
+                      {equipoInfo?.descripcion && (
+                        <div className="reporte-equipo-descripcion">
+                          <strong>📝 Descripción del equipo:</strong>
+                          <p>{equipoInfo.descripcion}</p>
+                        </div>
+                      )}
+
                       <div className="reporte-descripcion">
-                        <strong>Descripción:</strong>
+                        <strong>📋 Reporte:</strong>
                         <p>{reporte.descripcion}</p>
                       </div>
 
@@ -556,7 +615,7 @@ export default function Reportes() {
                       )}
 
                       <button className="btn-editar-reporte" onClick={() => abrirModalEditar(reporte)}>
-                        ✏️ Cambiar Estado
+                        ✏️ Cambiar estado
                       </button>
                     </div>
                   )
@@ -571,14 +630,22 @@ export default function Reportes() {
       {modalReporte && reporteEditando && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>📋 Actualizar Reporte</h3>
+            <h3>📋 Actualizar reporte</h3>
             
             <div className="reporte-info-modal">
-              <p><strong>Equipo:</strong> {reporteEditando.equipo?.modelo?.nombre}</p>
-              <p><strong>Serie:</strong> {reporteEditando.equipo?.numero_serie}</p>
-              <p><strong>Sede:</strong> {reporteEditando.equipo?.sede?.nombre}</p>
+              <p><strong>Equipo:</strong> {reporteEditando.equipo_info?.nombre || reporteEditando.equipo?.modelo?.nombre || "Equipo sin nombre"}</p>
+              {reporteEditando.equipo_info?.numero_serie && (
+                <p><strong>Serie:</strong> {reporteEditando.equipo_info.numero_serie}</p>
+              )}
+              {reporteEditando.equipo_info?.tipo === "GENERAL" && (
+                <p><strong>Cantidad:</strong> {reporteEditando.equipo_info.cantidad} unidades</p>
+              )}
+              {reporteEditando.equipo_info?.categoria && (
+                <p><strong>Categoría:</strong> {reporteEditando.equipo_info.categoria}</p>
+              )}
+              <p><strong>Sede:</strong> {reporteEditando.equipo_info?.sede?.nombre || reporteEditando.equipo?.sede?.nombre || "N/A"}</p>
               <p><strong>Reportado por:</strong> {reporteEditando.subadmin?.nombre}</p>
-              <p><strong>Descripción:</strong> {reporteEditando.descripcion}</p>
+              <p><strong>Descripción del reporte:</strong> {reporteEditando.descripcion}</p>
             </div>
 
             <div className="form-group">

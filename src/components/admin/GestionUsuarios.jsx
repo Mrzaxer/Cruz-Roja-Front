@@ -64,7 +64,7 @@ export default function GestionUsuarios() {
       <AdminLayout titulo="Gestión de Usuarios">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p style={{ marginTop: '1rem', color: '#6b7280' }}>Cargando usuarios...</p>
           </div>
         </div>

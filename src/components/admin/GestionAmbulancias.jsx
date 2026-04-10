@@ -59,7 +59,7 @@ export default function GestionAmbulancias() {
       <AdminLayout titulo="Gestión de Ambulancias">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p style={{ marginTop: '1rem', color: '#6b7280' }}>Cargando ambulancias...</p>
           </div>
         </div>

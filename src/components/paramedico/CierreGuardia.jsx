@@ -32,6 +32,16 @@ export default function CierreGuardia() {
   const categoriaActual = categorias[categoriaIndex]
   const esUltimaCategoria = categoriaIndex === categorias.length - 1
 
+  // Función para obtener la fecha actual en GMT-6 (hora centro de México)
+  const getFechaGMT6 = () => {
+    const now = new Date()
+    // Obtener la hora en GMT-6
+    const offset = -6
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+    const fechaGMT6 = new Date(utc + (offset * 3600000))
+    return fechaGMT6.toISOString()
+  }
+
   if (!ambulancia) {
     return <Navigate to="/paramedico" />
   }
@@ -233,7 +243,11 @@ export default function CierreGuardia() {
       
       console.log('Total insumos a guardar:', todosLosInsumos.length)
 
-      // Crear el registro principal de cierre
+      // Obtener la fecha actual en GMT-6
+      const fechaGMT6 = getFechaGMT6()
+      console.log('Fecha en GMT-6:', fechaGMT6)
+
+      // Crear el registro principal de cierre con fecha en GMT-6
       const { data: registro, error: errorRegistro } = await supabase
         .from('registros')
         .insert({
@@ -241,7 +255,8 @@ export default function CierreGuardia() {
           ambulancia_id: ambulancia.id,
           paramedico_id: user.id,
           tipo: 'CIERRE',
-          observaciones: observacionesFinales
+          observaciones: observacionesFinales,
+          fecha: fechaGMT6  // ← Fecha ajustada a GMT-6
         })
         .select()
         .single()
@@ -253,7 +268,7 @@ export default function CierreGuardia() {
         registro_id: registro.id,
         insumo_id: insumo.id,
         cantidad_registrada: cantidades[insumo.id] ?? 0,
-        cantidad_establecida: insumo.cantidad_establecida,  // ← Guardamos la cantidad establecida
+        cantidad_establecida: insumo.cantidad_establecida,
         comentario: ''
       }))
 
@@ -310,7 +325,7 @@ export default function CierreGuardia() {
       <ParamedicoLayout titulo="Cierre de Guardia">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p>Cargando insumos...</p>
           </div>
         </div>

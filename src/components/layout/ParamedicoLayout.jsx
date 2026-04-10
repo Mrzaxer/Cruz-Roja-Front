@@ -1,7 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/ParamedicoLayout.css'
-import logo from '../../assets/imagenes/logo.jpg'
+import firmaInst from '../../assets/imagenes/firmainst.png' // ← Importar la imagen
 
 export default function ParamedicoLayout({ children, titulo }) {
   const { user, logout } = useAuth()
@@ -14,21 +14,24 @@ export default function ParamedicoLayout({ children, titulo }) {
 
   return (
     <div className="paramedico-layout-container">
-      {/* Barra superior roja */}
+      {/* Barra superior roja animada */}
       <div className="paramedico-top-bar"></div>
 
       {/* Header */}
       <header className="paramedico-header">
         <div className="paramedico-header-content">
           <div className="paramedico-header-top">
-            {/* Logo y título */}
+            {/* Logo y título - SOLO LA IMAGEN firmainst.png */}
             <div className="paramedico-logo-area">
-              <div className="paramedico-logo">
-                <img src={logo} alt="Logo Cruz Roja" />
-              </div>
               <div className="paramedico-logo-text">
-                <h1>CRUZ ROJA MEXICANA</h1>
-                <p>Jalisco</p>
+                <img 
+                  src={firmaInst} 
+                  alt="Firma institucional Cruz Roja Mexicana" 
+                  loading="lazy"
+                />
+                {/* Textos ocultos por CSS, pero los dejamos por si acaso */}
+                <h1 style={{ display: 'none' }}>CRUZ ROJA MEXICANA</h1>
+                <p style={{ display: 'none' }}>Jalisco</p>
               </div>
             </div>
 
@@ -40,7 +43,7 @@ export default function ParamedicoLayout({ children, titulo }) {
               </div>
               <button onClick={handleLogout} className="paramedico-btn-logout">
                 <span>🚪</span>
-                <span>Salir</span>
+                <span>Cerrar Sesión</span>
               </button>
             </div>
           </div>

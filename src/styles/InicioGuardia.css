@@ -6,6 +6,8 @@
   --verde-exito: #10b981;
   --verde-claro: #d1fae5;
   --amarillo-advertencia: #f59e0b;
+  --azul-info: #3b82f6;
+  --azul-claro: #dbeafe;
   --gris-fondo: #f3f4f6;
   --blanco: #ffffff;
   --gris-100: #f9fafb;
@@ -153,9 +155,30 @@
   box-shadow: var(--sombra);
 }
 
+/* Estado COMPLETO para equipos con serie (checkbox marcado) */
 .equipo-item.completo {
   background-color: var(--verde-claro);
   border-color: var(--verde-exito);
+}
+
+/* Estado COMPLETO para equipos generales (cantidad registrada) */
+.equipo-item.completo-general {
+  background-color: var(--verde-claro);
+  border-color: var(--verde-exito);
+}
+
+/* Estado FALTANTE para equipos generales (cantidad < esperada) */
+.equipo-item.faltante {
+  background-color: var(--rojo-claro);
+  border-color: var(--rojo-mexicano);
+  border-left: 4px solid var(--rojo-mexicano);
+}
+
+/* Estado EXCEDENTE para equipos generales (cantidad > esperada) */
+.equipo-item.excedente {
+  background-color: var(--azul-claro);
+  border-color: var(--azul-info);
+  border-left: 4px solid var(--azul-info);
 }
 
 .equipo-check {
@@ -297,6 +320,10 @@
 
 .stat-value.faltante {
   color: var(--rojo-mexicano);
+}
+
+.stat-value.excedente {
+  color: var(--azul-info);
 }
 
 .btn-guardar {
@@ -481,6 +508,10 @@
   color: #ef4444;
 }
 
+.stat-value.excedente {
+  color: #3b82f6;
+}
+
 /* Estilos para equipos generales con cantidad */
 .equipo-cantidad-establecida {
   display: inline-block;
@@ -515,6 +546,27 @@
   font-size: 0.9rem;
   text-align: center;
   transition: all 0.2s;
+}
+
+/* Estado COMPLETO del input (cantidad = esperada) */
+.cantidad-input.completo {
+  border-color: var(--verde-exito);
+  background-color: var(--verde-claro);
+  color: #065f46;
+}
+
+/* Estado FALTANTE del input (cantidad < esperada) */
+.cantidad-input.faltante {
+  border-color: var(--rojo-mexicano);
+  background-color: var(--rojo-claro);
+  color: #991b1b;
+}
+
+/* Estado EXCEDENTE del input (cantidad > esperada) */
+.cantidad-input.excedente {
+  border-color: var(--azul-info);
+  background-color: var(--azul-claro);
+  color: #1e40af;
 }
 
 .cantidad-input:focus {

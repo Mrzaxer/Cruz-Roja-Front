@@ -20,6 +20,16 @@ export default function InicioGuardia() {
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
 
+  // Función para obtener la fecha actual en GMT-6 (hora centro de México)
+  const getFechaGMT6 = () => {
+    const now = new Date()
+    // Obtener la hora en GMT-6
+    const offset = -6
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+    const fechaGMT6 = new Date(utc + (offset * 3600000))
+    return fechaGMT6.toISOString()
+  }
+
   if (!ambulancia) {
     return <Navigate to="/paramedico" />
   }
@@ -67,14 +77,16 @@ export default function InicioGuardia() {
 
   const cargarEquiposGenerales = async () => {
     try {
-      // Cargar equipos generales (tipo GENERAL)
+      // Cargar equipos generales (tipo GENERAL) - AHORA USANDO CAMPOS DIRECTOS
       const { data: equiposGeneralesData, error: errorGenerales } = await supabase
         .from("equipos")
         .select(`
           id,
+          nombre,
+          descripcion,
+          categoria,
           cantidad,
-          estado,
-          modelo:modelos_equipo(id, nombre, descripcion, categoria)
+          estado
         `)
         .eq("tipo", "GENERAL")
         .eq("estado", "ACTIVO")
@@ -87,10 +99,10 @@ export default function InicioGuardia() {
         id: `general_${equipo.id}`,
         tipo: "general",
         equipo_id: equipo.id,
-        nombre: equipo.modelo?.nombre || "Equipo sin modelo",
-        descripcion: equipo.modelo?.descripcion || "",
+        nombre: equipo.nombre || "Equipo sin nombre",
+        descripcion: equipo.descripcion || "",
         cantidad_establecida: equipo.cantidad,
-        categoria: equipo.modelo?.categoria || ""
+        categoria: equipo.categoria || ""
       }))
 
       setEquiposGenerales(equiposGeneralesFormateados)
@@ -132,11 +144,45 @@ export default function InicioGuardia() {
     }))
   }
 
+  // ==================== VALIDACIÓN DE FORMULARIO COMPLETO ====================
+  const verificarFormularioCompleto = () => {
+    // Verificar equipos con serie (checkbox)
+    const todosEquiposSerieCompletos = equipos.every(equipo => 
+      equipoEstado[equipo.id]?.presente !== undefined
+    )
+    
+    // Verificar equipos generales (cantidad)
+    const todosEquiposGeneralesCompletos = equiposGenerales.every(equipo => 
+      cantidades[equipo.id] !== undefined && cantidades[equipo.id] !== ''
+    )
+    
+    // Si hay equipos con serie y están todos completos, o no hay equipos con serie
+    const serieCompleto = equipos.length === 0 ? true : todosEquiposSerieCompletos
+    
+    // Si hay equipos generales y están todos completos, o no hay equipos generales
+    const generalCompleto = equiposGenerales.length === 0 ? true : todosEquiposGeneralesCompletos
+    
+    return serieCompleto && generalCompleto
+  }
+
+  // Verificar si el botón debe estar deshabilitado
+  const formularioCompleto = verificarFormularioCompleto()
+
   const guardarInicio = async () => {
+    // Validar antes de guardar
+    if (!formularioCompleto) {
+      alert("⚠️ Debes completar toda la información antes de guardar el inicio de guardia")
+      return
+    }
+
     setGuardando(true)
 
     try {
-      // 1. Crear registro de inicio
+      // Obtener la fecha actual en GMT-6
+      const fechaGMT6 = getFechaGMT6()
+      console.log('Fecha en GMT-6:', fechaGMT6)
+
+      // 1. Crear registro de inicio con fecha en GMT-6
       const { data: registro, error: errorRegistro } = await supabase
         .from('registros')
         .insert({
@@ -144,7 +190,8 @@ export default function InicioGuardia() {
           ambulancia_id: ambulancia.id,
           paramedico_id: user.id,
           tipo: 'INICIO',
-          observaciones: ''
+          observaciones: '',
+          fecha: fechaGMT6
         })
         .select()
         .single()
@@ -222,7 +269,7 @@ export default function InicioGuardia() {
       <ParamedicoLayout titulo="Inicio de Guardia">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p>Cargando equipo médico...</p>
           </div>
         </div>
@@ -240,6 +287,11 @@ export default function InicioGuardia() {
   const total = totalSerie + totalGenerales
   const completos = completosSerie + completosGenerales
   const porcentaje = total > 0 ? Math.round((completos / total) * 100) : 0
+
+  // Obtener cantidad de campos pendientes
+  const pendientesSerie = equipos.length - completosSerie
+  const pendientesGenerales = equiposGenerales.length - completosGenerales
+  const totalPendientes = pendientesSerie + pendientesGenerales
 
   return (
 
@@ -348,58 +400,75 @@ export default function InicioGuardia() {
                 {equiposGenerales.length > 0 && (
                   <>
                     <h4 className="equipo-seccion-titulo">
-                      <span>📦</span> Equipos Generales (registrar cantidad)
+                      <span>📦</span> Equipos (registrar cantidad)
                     </h4>
-                    {equiposGenerales.map(equipo => (
-                      <div
-                        key={equipo.id}
-                        className={`equipo-item ${cantidades[equipo.id] !== undefined && cantidades[equipo.id] !== '' ? 'completo' : ''}`}
-                      >
-                        <div className="equipo-contenido" style={{ flex: 1 }}>
-                          <div className="equipo-nombre">
-                            <strong>{equipo.nombre}</strong>
-                            <span className="equipo-cantidad-establecida">
-                              Esperado: {equipo.cantidad_establecida} unidades
-                            </span>
-                            {cantidades[equipo.id] !== undefined && cantidades[equipo.id] !== '' && (
-                              <span className="equipo-badge">✓ Registrado</span>
-                            )}
-                          </div>
-
-                          {equipo.descripcion && (
-                            <div className="equipo-descripcion">{equipo.descripcion}</div>
-                          )}
-
-                          {equipo.categoria && (
-                            <div className="equipo-categoria">
-                              <span className="categoria-badge">{equipo.categoria}</span>
+                    {equiposGenerales.map(equipo => {
+                      // Determinar estado del equipo general
+                      const cantidadIngresada = cantidades[equipo.id]
+                      const cantidadEsperada = equipo.cantidad_establecida
+                      let estadoEquipo = ''
+                      
+                      if (cantidadIngresada !== undefined && cantidadIngresada !== '') {
+                        if (cantidadIngresada === cantidadEsperada) {
+                          estadoEquipo = 'completo'
+                        } else if (cantidadIngresada < cantidadEsperada) {
+                          estadoEquipo = 'faltante'
+                        } else if (cantidadIngresada > cantidadEsperada) {
+                          estadoEquipo = 'excedente'
+                        }
+                      }
+                      
+                      return (
+                        <div
+                          key={equipo.id}
+                          className={`equipo-item ${estadoEquipo}`}
+                        >
+                          <div className="equipo-contenido" style={{ flex: 1 }}>
+                            <div className="equipo-nombre">
+                              <strong>{equipo.nombre}</strong>
+                              <span className="equipo-cantidad-establecida">
+                                Esperado: {equipo.cantidad_establecida} unidades
+                              </span>
+                              {cantidadIngresada !== undefined && cantidadIngresada !== '' && (
+                                <span className="equipo-badge">✓ Registrado</span>
+                              )}
                             </div>
-                          )}
 
-                          <div className="equipo-cantidad-input">
-                            <label className="cantidad-label">Cantidad presente:</label>
-                            <input
-                              type="number"
-                              min="0"
-                              placeholder="Ingrese cantidad"
-                              value={cantidades[equipo.id] ?? ''}
-                              onChange={(e) => cambiarCantidad(equipo.id, e.target.value)}
-                              className="cantidad-input"
-                            />
-                          </div>
+                            {equipo.descripcion && (
+                              <div className="equipo-descripcion">{equipo.descripcion}</div>
+                            )}
 
-                          <div className="equipo-observacion">
-                            <span className="observacion-icono">📝</span>
-                            <input
-                              type="text"
-                              placeholder="Observaciones (opcional)"
-                              value={equipoEstado[equipo.id]?.observacion || ''}
-                              onChange={(e) => cambiarObservacion(equipo.id, e.target.value)}
-                            />
+                            {equipo.categoria && (
+                              <div className="equipo-categoria">
+                                <span className="categoria-badge">{equipo.categoria}</span>
+                              </div>
+                            )}
+
+                            <div className="equipo-cantidad-input">
+                              <label className="cantidad-label">Cantidad presente:</label>
+                              <input
+                                type="number"
+                                min="0"
+                                placeholder="Ingrese cantidad"
+                                value={cantidades[equipo.id] ?? ''}
+                                onChange={(e) => cambiarCantidad(equipo.id, e.target.value)}
+                                className={`cantidad-input ${estadoEquipo}`}
+                              />
+                            </div>
+
+                            <div className="equipo-observacion">
+                              <span className="observacion-icono">📝</span>
+                              <input
+                                type="text"
+                                placeholder="Observaciones (opcional)"
+                                value={equipoEstado[equipo.id]?.observacion || ''}
+                                onChange={(e) => cambiarObservacion(equipo.id, e.target.value)}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </>
                 )}
               </>
@@ -420,24 +489,29 @@ export default function InicioGuardia() {
                 )}
                 {equiposGenerales.length > 0 && (
                   <div className="stat-item">
-                    <span className="stat-label">Equipos generales:</span>
+                    <span className="stat-label">Equipos:</span>
                     <span className="stat-value">{completosGenerales}/{totalGenerales}</span>
                   </div>
                 )}
-                <div className="stat-item">
-                  <span className="stat-label">Total verificados:</span>
-                  <span className="stat-value">{completos}/{total}</span>
-                </div>
+                
                 <div className="stat-item">
                   <span className="stat-label">Progreso:</span>
                   <span className="stat-value">{porcentaje}%</span>
                 </div>
+
+                {totalPendientes > 0 && (
+                  <div className="stat-item">
+                    <span className="stat-label">Pendientes:</span>
+                    <span className="stat-value faltante">{totalPendientes}</span>
+                  </div>
+                )}
               </div>
 
               <button
                 onClick={guardarInicio}
-                disabled={guardando}
+                disabled={guardando || !formularioCompleto}
                 className="btn-guardar"
+                style={!formularioCompleto ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
               >
                 {guardando ? 'Guardando...' : '✅ Guardar inicio de guardia'}
               </button>

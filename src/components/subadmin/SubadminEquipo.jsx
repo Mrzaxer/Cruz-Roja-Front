@@ -69,7 +69,7 @@ export default function SubadminEquipo() {
         setEquipos(equiposConReportes)
       }
 
-      // Cargar equipos generales (GENERAL)
+      // Cargar equipos generales (GENERAL) - AHORA USANDO LOS CAMPOS DIRECTOS DEL EQUIPO
       const { data: equiposGeneralesData, error: errorGenerales } = await supabase
         .from("equipos")
         .select(`
@@ -227,7 +227,7 @@ export default function SubadminEquipo() {
       <SubadminLayout titulo="Gestión de Equipo Médico">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p>Cargando equipos...</p>
           </div>
         </div>
@@ -425,7 +425,7 @@ export default function SubadminEquipo() {
           </>
         )}
 
-        {/* VISTA DE EQUIPOS GENERALES */}
+        {/* VISTA DE EQUIPOS GENERALES - CORREGIDA */}
         {tipoVista === "general" && (
           <div className="equipo-section">
             <div className="section-header">
@@ -446,7 +446,8 @@ export default function SubadminEquipo() {
                     <div key={equipo.id} className="equipo-general-card">
                       <div className="equipo-general-header">
                         <div className="equipo-general-info">
-                          <strong>{equipo.modelo?.nombre || "Sin modelo"}</strong>
+                          {/* CAMBIO IMPORTANTE: Usar los campos directos del equipo, no del modelo */}
+                          <strong>{equipo.nombre || "Equipo sin nombre"}</strong>
                           <span className="estado-badge" style={estadoStyle}>
                             {estadoStyle.text}
                           </span>
@@ -457,14 +458,16 @@ export default function SubadminEquipo() {
                           <span className="cantidad-label">📦 Cantidad disponible:</span>
                           <span className="cantidad-valor">{equipo.cantidad} unidades</span>
                         </div>
-                        {equipo.modelo?.categoria && (
+                        {/* CAMBIO IMPORTANTE: Mostrar categoría del equipo, no del modelo */}
+                        {equipo.categoria && (
                           <div className="equipo-general-categoria">
                             <span className="categoria-label">🏷️ Categoría:</span>
-                            <span className="categoria-valor">{equipo.modelo.categoria}</span>
+                            <span className="categoria-valor">{equipo.categoria}</span>
                           </div>
                         )}
-                        {equipo.modelo?.descripcion && (
-                          <p className="equipo-general-descripcion">{equipo.modelo.descripcion}</p>
+                        {/* CAMBIO IMPORTANTE: Mostrar descripción del equipo, no del modelo */}
+                        {equipo.descripcion && (
+                          <p className="equipo-general-descripcion">{equipo.descripcion}</p>
                         )}
                         <div className="equipo-general-note">
                           <span className="note-label">📝 Nota:</span>
@@ -533,15 +536,24 @@ export default function SubadminEquipo() {
           <div className="modal-content">
             <h3>📋 Reportar {equipoSeleccionado ? "problema de equipo" : "comentario sobre equipo general"}</h3>
             <div className="equipo-info-modal">
-              <strong>{equipoSeleccionado?.modelo?.nombre || consumibleSeleccionado?.modelo?.nombre || "Sin nombre"}</strong>
+              {/* CAMBIO IMPORTANTE: Mostrar información correcta según el tipo */}
               {equipoSeleccionado && (
-                <span>N° Serie: {equipoSeleccionado.numero_serie}</span>
+                <>
+                  <strong>{equipoSeleccionado.modelo?.nombre || "Sin modelo"}</strong>
+                  <span>N° Serie: {equipoSeleccionado.numero_serie}</span>
+                  {equipoSeleccionado.ambulancia && (
+                    <span>Ambulancia: {equipoSeleccionado.ambulancia.codigo}</span>
+                  )}
+                </>
               )}
               {consumibleSeleccionado && (
-                <span>Cantidad disponible: {consumibleSeleccionado.cantidad} unidades</span>
-              )}
-              {equipoSeleccionado?.ambulancia && (
-                <span>Ambulancia: {equipoSeleccionado.ambulancia.codigo}</span>
+                <>
+                  <strong>{consumibleSeleccionado.nombre || "Equipo sin nombre"}</strong>
+                  {consumibleSeleccionado.categoria && (
+                    <span>Categoría: {consumibleSeleccionado.categoria}</span>
+                  )}
+                  <span>Cantidad disponible: {consumibleSeleccionado.cantidad} unidades</span>
+                </>
               )}
             </div>
             <div className="form-group">

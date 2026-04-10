@@ -1,20 +1,36 @@
 /* ===== SUBADMIN LAYOUT - UNIFICADO CON PARAMEDICO ===== */
 :root {
-  --rojo-mexicano: #b22222;
-  --rojo-oscuro: #8b0000;
-  --rojo-claro: #fee2e2;
-  --gris-fondo: #f3f4f6;
+  --rojo-principal: #e53e3e;
+  --rojo-oscuro: #c53030;
+  --rojo-claro: #fff5f5;
+  --rojo-hover: #feb2b2;
+  --gris-fondo: #f7fafc;
+  --gris-texto: #4a5568;
+  --gris-claro: #718096;
   --blanco: #ffffff;
-  --gris-100: #f9fafb;
-  --gris-200: #e5e7eb;
-  --gris-300: #d1d5db;
-  --gris-400: #9ca3af;
-  --gris-500: #6b7280;
-  --gris-600: #4b5563;
-  --gris-700: #374151;
-  --gris-800: #1f2937;
-  --sombra: 0 1px 3px rgba(0,0,0,0.1);
-  --sombra-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --sombra: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --breakpoint-mobile: 640px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+}
+
+/* MODO OSCURO - EXACTAMENTE EL MISMO CONTRASTE */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gris-fondo: #f7fafc;
+    --blanco: #ffffff;
+    --gris-texto: #4a5568;
+    --gris-claro: #718096;
+    --sombra: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .subadmin-layout-container {
@@ -25,31 +41,61 @@
   flex-direction: column;
 }
 
+/* Mismo fondo en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-layout-container {
+    background-color: var(--gris-fondo);
+  }
+}
+
 /* Barra superior */
 .subadmin-top-bar {
-  background-color: var(--rojo-mexicano);
+  background: linear-gradient(90deg, var(--rojo-principal), var(--rojo-oscuro), var(--rojo-principal));
   height: 4px;
   width: 100%;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 50;
+  animation: gradientShift 8s ease infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 /* Header */
 .subadmin-header {
   background-color: var(--blanco);
-  border-bottom: 1px solid var(--gris-200);
+  border-bottom: 1px solid rgba(229, 62, 62, 0.1);
   width: 100%;
   margin-top: 4px;
   position: sticky;
   top: 4px;
   z-index: 40;
+  box-shadow: var(--sombra);
+}
+
+/* Mismo borde en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-header {
+    border-bottom: 1px solid rgba(229, 62, 62, 0.1);
+  }
 }
 
 .subadmin-header-content {
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   padding: 1rem 2rem;
+}
+
+@media (max-width: 768px) {
+  .subadmin-header-content {
+    padding: 1rem;
+  }
 }
 
 .subadmin-header-top {
@@ -57,46 +103,39 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-}
-
-/* Logo y título */
-.subadmin-logo-area {
-  display: flex;
-  align-items: center;
   gap: 1rem;
 }
 
-.subadmin-logo {
-  width: 48px;
-  height: 48px;
-  background-color: var(--blanco);
-  border-radius: 12px;
+/* Logo y título - SOLO LA IMAGEN */
+.subadmin-logo-area {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  border: 2px solid var(--rojo-mexicano);
+  flex: 1;
 }
 
-.subadmin-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.subadmin-logo {
+  display: none; /* OCULTO - No se usa */
 }
 
-.subadmin-logo-text h1 {
-  color: var(--rojo-mexicano);
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap;
+.subadmin-logo span {
+  display: none;
 }
 
+.subadmin-logo-text {
+  display: flex;
+  align-items: center;
+}
+
+.subadmin-logo-text img.subadmin-firma-img {
+  max-height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Ocultar textos viejos */
+.subadmin-logo-text h1,
 .subadmin-logo-text p {
-  color: var(--gris-500);
-  font-size: 0.75rem;
-  white-space: nowrap;
+  display: none;
 }
 
 /* Área de usuario */
@@ -106,6 +145,12 @@
   gap: 2rem;
 }
 
+@media (max-width: 768px) {
+  .subadmin-user-area {
+    gap: 1rem;
+  }
+}
+
 .subadmin-user-info {
   text-align: right;
 }
@@ -113,41 +158,70 @@
 .subadmin-user-name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--gris-800);
+  color: #2d3748;
   white-space: nowrap;
+}
+
+/* Mismo color de nombre en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-user-name {
+    color: #2d3748;
+  }
 }
 
 .subadmin-user-role {
   font-size: 0.8rem;
-  color: var(--gris-500);
+  color: var(--gris-claro);
   text-align: right;
+}
+
+/* Mismo color de rol en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-user-role {
+    color: var(--gris-claro);
+  }
 }
 
 .subadmin-btn-logout {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--rojo-claro);
+  background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
   border: none;
-  color: var(--rojo-mexicano);
+  color: white;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(229, 62, 62, 0.2);
 }
 
 .subadmin-btn-logout:hover {
-  background-color: #fecaca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
+  background: linear-gradient(135deg, var(--rojo-oscuro), var(--rojo-principal));
+}
+
+/* Mismo botón en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-btn-logout {
+    background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+    box-shadow: 0 1px 3px rgba(229, 62, 62, 0.2);
+  }
+  
+  .subadmin-btn-logout:hover {
+    box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
+  }
 }
 
 /* Navegación */
 .subadmin-nav {
   display: flex;
   gap: 2rem;
-  border-top: 1px solid var(--gris-200);
+  border-top: 1px solid rgba(229, 62, 62, 0.1);
   padding-top: 1rem;
   margin-top: 1rem;
   width: 100%;
@@ -162,23 +236,22 @@
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: all 0.2s;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
   cursor: pointer;
-  color: var(--gris-600);
+  color: var(--gris-claro);
   background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
 }
 
 .subadmin-nav-item.active {
-  color: var(--rojo-mexicano);
-  border-bottom-color: var(--rojo-mexicano);
+  color: var(--rojo-principal);
+  border-bottom-color: var(--rojo-principal);
 }
 
 .subadmin-nav-item:hover {
-  color: var(--gris-800);
+  color: var(--gris-texto);
+  transform: translateY(-1px);
 }
 
 .nav-icon {
@@ -188,51 +261,70 @@
 /* Título de página */
 .subadmin-page-title {
   background-color: var(--blanco);
-  border-bottom: 1px solid var(--gris-200);
+  border-bottom: 1px solid rgba(229, 62, 62, 0.1);
   width: 100%;
+}
+
+/* Mismo borde en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-page-title {
+    border-bottom: 1px solid rgba(229, 62, 62, 0.1);
+  }
 }
 
 .subadmin-title-content {
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   padding: 1.5rem 2rem;
+}
+
+@media (max-width: 768px) {
+  .subadmin-title-content {
+    padding: 1rem;
+  }
 }
 
 .subadmin-title-content h2 {
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--gris-800);
+  color: #2d3748;
   margin-bottom: 0.25rem;
 }
 
+/* Mismo color de título en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .subadmin-title-content h2 {
+    color: #2d3748;
+  }
+}
+
 .subadmin-subtitulo {
-  color: var(--gris-500);
+  color: var(--gris-claro);
   font-size: 1rem;
 }
 
 /* Contenido principal */
 .subadmin-main {
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
   padding: 2rem;
   flex: 1;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
-  .subadmin-header-content {
-    padding: 1rem;
-  }
-  
-  .subadmin-title-content {
-    padding: 1rem;
-  }
-  
   .subadmin-main {
     padding: 1rem;
   }
-  
+}
+
+/* ===== MEDIA QUERIES RESPONSIVOS ===== */
+
+/* Tablets */
+@media (max-width: 768px) {
   .subadmin-header-top {
     flex-direction: column;
-    gap: 1rem;
     align-items: flex-start;
   }
   
@@ -241,13 +333,17 @@
     justify-content: space-between;
   }
   
-  .subadmin-nav {
-    flex-wrap: wrap;
-    gap: 1rem;
+  .subadmin-logo-text img.subadmin-firma-img {
+    max-height: 50px;
   }
   
-  .subadmin-logo-text h1 {
-    font-size: 1.25rem;
+  .subadmin-user-name,
+  .subadmin-user-role {
+    white-space: normal;
+  }
+  
+  .subadmin-nav {
+    gap: 1rem;
   }
   
   .subadmin-title-content h2 {
@@ -255,9 +351,51 @@
   }
 }
 
-@media (max-width: 480px) {
+/* Móviles grandes */
+@media (max-width: 640px) {
+  .subadmin-logo-text img.subadmin-firma-img {
+    max-height: 45px;
+  }
+  
+  .subadmin-user-name {
+    font-size: 0.85rem;
+  }
+  
+  .subadmin-user-role {
+    font-size: 0.7rem;
+  }
+  
+  .subadmin-btn-logout {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
   .subadmin-nav-item {
     font-size: 0.85rem;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .subadmin-logo-text img.subadmin-firma-img {
+    max-height: 38px;
+  }
+  
+  .subadmin-user-name {
+    font-size: 0.8rem;
+  }
+  
+  .subadmin-user-role {
+    font-size: 0.65rem;
+  }
+  
+  .subadmin-btn-logout {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+  }
+  
+  .subadmin-nav {
+    justify-content: center;
   }
   
   .nav-text {
@@ -266,9 +404,62 @@
   
   .subadmin-nav-item {
     padding: 0.5rem;
+    font-size: 1.3rem;
   }
   
   .nav-icon {
     font-size: 1.3rem;
+  }
+  
+  .subadmin-title-content h2 {
+    font-size: 1.2rem;
+  }
+  
+  .subadmin-main {
+    padding: 0.75rem;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 360px) {
+  .subadmin-logo-text img.subadmin-firma-img {
+    max-height: 32px;
+  }
+  
+  .subadmin-user-area {
+    gap: 0.75rem;
+  }
+  
+  .subadmin-btn-logout span:first-child {
+    display: none;
+  }
+  
+  .subadmin-btn-logout {
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+/* Soporte para pantallas táctiles */
+@media (hover: none) {
+  .subadmin-btn-logout:hover,
+  .subadmin-nav-item:hover {
+    transform: none;
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .subadmin-top-bar {
+    animation: none;
+  }
+  
+  .subadmin-btn-logout,
+  .subadmin-nav-item {
+    transition: none;
+  }
+  
+  .subadmin-btn-logout:hover,
+  .subadmin-nav-item:hover {
+    transform: none;
   }
 }

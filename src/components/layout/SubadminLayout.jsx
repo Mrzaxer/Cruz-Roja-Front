@@ -1,7 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import '../../styles/SubadminLayout.css'
-import logo from '../../assets/imagenes/logo.jpg'
+import firmaInst from '../../assets/imagenes/firmainst.png' // ← Cambiado a firmainst.png
 
 export default function SubadminLayout({ children, titulo, subtitulo }) {
   const { user, logout } = useAuth()
@@ -35,14 +35,20 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
       <header className="subadmin-header">
         <div className="subadmin-header-content">
           <div className="subadmin-header-top">
-            {/* Logo y título */}
+            {/* Logo y título - SOLO LA IMAGEN firmainst.png */}
             <div className="subadmin-logo-area">
-              <div className="subadmin-logo">
-                <img src={logo} alt="Logo Cruz Roja" />
+              <div className="subadmin-logo" style={{ display: 'none' }}> {/* Oculto */}
+                <img src={firmaInst} alt="Logo Cruz Roja" />
               </div>
               <div className="subadmin-logo-text">
-                <h1>CRUZ ROJA MEXICANA</h1>
-                <p>Subadministrador</p>
+                <img 
+                  src={firmaInst} 
+                  alt="Firma institucional Cruz Roja Mexicana" 
+                  className="subadmin-firma-img"
+                  loading="lazy"
+                />
+                <h1 style={{ display: 'none' }}>CRUZ ROJA MEXICANA</h1>
+                <p style={{ display: 'none' }}>Subadministrador</p>
               </div>
             </div>
 

@@ -136,7 +136,7 @@ export default function SubadminInsumosSede() {
       <SubadminLayout titulo="Insumos por Sede">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p>Cargando insumos...</p>
           </div>
         </div>

@@ -83,7 +83,7 @@ export default function SubadminAmbulancias() {
       <SubadminLayout titulo="Gestión de Ambulancias">
         <div className="loading-container">
           <div className="loading-spinner">
-            <span>⛑️</span>
+            <span>⟳</span>
             <p>Cargando ambulancias...</p>
           </div>
         </div>
