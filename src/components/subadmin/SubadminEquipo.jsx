@@ -1,3 +1,12 @@
+/**
+ * @component SubadminEquipo
+ * @description Gestión de equipo médico para subadministradores:
+ *              - Equipos con serie (INDIVIDUAL): asignar/desasignar a ambulancias, reportar fallas
+ *              - Equipos generales (GENERAL): reportar comentarios/observaciones
+ *              - Visualización de equipos por ambulancia y disponibles
+ * @returns {JSX.Element}
+ */
+
 import { useState, useEffect } from "react"
 import { supabase } from "../../supabase"
 import { useAuth } from "../../context/AuthContext"
@@ -6,8 +15,10 @@ import "../../styles/SubadminEquipo.css"
 
 export default function SubadminEquipo() {
   const { user } = useAuth()
-  const [equipos, setEquipos] = useState([]) // Equipos con serie (asignables)
-  const [equiposGenerales, setEquiposGenerales] = useState([]) // Equipos generales
+  
+  // ===== ESTADOS =====
+  const [equipos, setEquipos] = useState([])
+  const [equiposGenerales, setEquiposGenerales] = useState([])
   const [ambulancias, setAmbulancias] = useState([])
   const [cargando, setCargando] = useState(true)
   const [modalAsignacion, setModalAsignacion] = useState(false)
@@ -18,27 +29,30 @@ export default function SubadminEquipo() {
   const [filtroEstado, setFiltroEstado] = useState("")
   const [tipoVista, setTipoVista] = useState("individual")
   
+  // Formulario de reporte
   const [tipoReporte, setTipoReporte] = useState("FALLA")
   const [descripcionReporte, setDescripcionReporte] = useState("")
 
+  // ===== CARGA INICIAL =====
   useEffect(() => {
     cargarDatos()
   }, [])
 
+  /**
+   * Carga todos los datos necesarios: ambulancias, equipos con serie y equipos generales
+   */
   const cargarDatos = async () => {
     try {
-      // Cargar ambulancias de la sede
-      const { data: ambulanciasData, error: errorAmb } = await supabase
+      // 1. Cargar ambulancias activas de la sede
+      const { data: ambulanciasData } = await supabase
         .from("ambulancias")
         .select("id, codigo, placa")
         .eq("sede_id", user.sede_id)
         .eq("estado", "ACTIVA")
-
-      if (errorAmb) console.error("Error ambulancias:", errorAmb)
       setAmbulancias(ambulanciasData || [])
 
-      // Cargar equipos con serie (INDIVIDUAL) de la sede
-      const { data: equiposData, error: errorEquipos } = await supabase
+      // 2. Cargar equipos con serie (INDIVIDUAL) de la sede
+      const { data: equiposData } = await supabase
         .from("equipos")
         .select(`
           *,
@@ -51,26 +65,21 @@ export default function SubadminEquipo() {
         .order("estado", { ascending: true })
         .order("numero_serie", { ascending: true })
 
-      if (errorEquipos) {
-        console.error("Error equipos:", errorEquipos)
-        setEquipos([])
-      } else {
-        // Cargar reportes para cada equipo
-        const equiposConReportes = await Promise.all(
-          (equiposData || []).map(async (equipo) => {
-            const { data: reportes } = await supabase
-              .from("reportes")
-              .select("*")
-              .eq("equipo_id", equipo.id)
-              .eq("tipo_reporte", "EQUIPO")
-            return { ...equipo, reportes: reportes || [] }
-          })
-        )
-        setEquipos(equiposConReportes)
-      }
+      // Cargar reportes para cada equipo
+      const equiposConReportes = await Promise.all(
+        (equiposData || []).map(async (equipo) => {
+          const { data: reportes } = await supabase
+            .from("reportes")
+            .select("*")
+            .eq("equipo_id", equipo.id)
+            .eq("tipo_reporte", "EQUIPO")
+          return { ...equipo, reportes: reportes || [] }
+        })
+      )
+      setEquipos(equiposConReportes)
 
-      // Cargar equipos generales (GENERAL) - AHORA USANDO LOS CAMPOS DIRECTOS DEL EQUIPO
-      const { data: equiposGeneralesData, error: errorGenerales } = await supabase
+      // 3. Cargar equipos generales (GENERAL)
+      const { data: equiposGeneralesData } = await supabase
         .from("equipos")
         .select(`
           *,
@@ -78,13 +87,7 @@ export default function SubadminEquipo() {
         `)
         .eq("tipo", "GENERAL")
         .order("estado", { ascending: true })
-
-      if (errorGenerales) {
-        console.error("Error equipos generales:", errorGenerales)
-        setEquiposGenerales([])
-      } else {
-        setEquiposGenerales(equiposGeneralesData || [])
-      }
+      setEquiposGenerales(equiposGeneralesData || [])
 
       setCargando(false)
     } catch (error) {
@@ -93,7 +96,11 @@ export default function SubadminEquipo() {
     }
   }
 
-  // ==================== EQUIPOS CON SERIE ====================
+  // ===== EQUIPOS CON SERIE =====
+
+  /**
+   * Asigna un equipo a una ambulancia
+   */
   const asignarEquipo = async () => {
     if (!ambulanciaSeleccionada) {
       alert("Seleccione una ambulancia")
@@ -110,16 +117,17 @@ export default function SubadminEquipo() {
       return
     }
 
-    alert("Equipo asignado correctamente")
-    setModalAsignacion(false)
-    setEquipoSeleccionado(null)
-    setAmbulanciaSeleccionada("")
+    alert("✅ Equipo asignado correctamente")
+    cerrarModalAsignacion()
     cargarDatos()
   }
 
+  /**
+   * Desasigna un equipo de su ambulancia actual
+   * @param {number} equipoId - ID del equipo a desasignar
+   */
   const desasignarEquipo = async (equipoId) => {
-    const confirmar = confirm("¿Desasignar este equipo de la ambulancia?")
-    if (!confirmar) return
+    if (!confirm("¿Desasignar este equipo de la ambulancia?")) return
 
     const { error } = await supabase
       .from("equipos")
@@ -134,6 +142,9 @@ export default function SubadminEquipo() {
     cargarDatos()
   }
 
+  /**
+   * Reporta una falla o problema de un equipo con serie
+   */
   const reportarEquipo = async () => {
     if (!descripcionReporte) {
       alert("Describa el problema del equipo")
@@ -156,15 +167,16 @@ export default function SubadminEquipo() {
       return
     }
 
-    alert("Reporte enviado correctamente al administrador")
-    setModalReporte(false)
-    setEquipoSeleccionado(null)
-    setDescripcionReporte("")
-    setTipoReporte("FALLA")
+    alert("📋 Reporte enviado correctamente al administrador")
+    cerrarModalReporte()
     cargarDatos()
   }
 
-  // ==================== EQUIPOS GENERALES ====================
+  // ===== EQUIPOS GENERALES =====
+
+  /**
+   * Reporta un comentario/observación sobre un equipo general
+   */
   const reportarConsumible = async () => {
     if (!descripcionReporte) {
       alert("Describa el problema o comentario")
@@ -186,15 +198,57 @@ export default function SubadminEquipo() {
       return
     }
 
-    alert("Comentario enviado correctamente al administrador")
-    setModalReporte(false)
-    setConsumibleSeleccionado(null)
-    setDescripcionReporte("")
-    setTipoReporte("FALLA")
+    alert("📋 Comentario enviado correctamente al administrador")
+    cerrarModalReporte()
     cargarDatos()
   }
 
-  // ==================== FILTROS ====================
+  // ===== UTILIDADES =====
+
+  const cerrarModalAsignacion = () => {
+    setModalAsignacion(false)
+    setEquipoSeleccionado(null)
+    setAmbulanciaSeleccionada("")
+  }
+
+  const cerrarModalReporte = () => {
+    setModalReporte(false)
+    setEquipoSeleccionado(null)
+    setConsumibleSeleccionado(null)
+    setDescripcionReporte("")
+    setTipoReporte("FALLA")
+  }
+
+  /**
+   * Verifica si un equipo tiene un reporte pendiente o en revisión
+   * @param {number} equipoId - ID del equipo
+   * @returns {boolean} True si tiene reporte pendiente
+   */
+  const tieneReportePendiente = (equipoId) => {
+    const equipo = equipos.find(e => e.id === equipoId)
+    if (!equipo?.reportes || equipo.reportes.length === 0) return false
+    return equipo.reportes.some(r => r.estado === "PENDIENTE" || r.estado === "EN_REVISION")
+  }
+
+  /**
+   * Obtiene los estilos visuales según el estado del equipo
+   * @param {string} estado - Estado del equipo
+   * @returns {Object} Estilos CSS y texto
+   */
+  const getEstadoColor = (estado) => {
+    switch(estado) {
+      case "ACTIVO": 
+        return { bg: "#dcfce7", color: "#166534", text: "✅ Activo" }
+      case "MANTENIMIENTO": 
+        return { bg: "#fef9c3", color: "#854d0e", text: "🔧 Mantenimiento" }
+      case "INACTIVO": 
+        return { bg: "#fee2e2", color: "#991b1b", text: "❌ Inactivo" }
+      default: 
+        return { bg: "#f3f4f6", color: "#4b5563", text: estado }
+    }
+  }
+
+  // ===== FILTROS =====
   const equiposFiltrados = filtroEstado
     ? equipos.filter(eq => eq.estado === filtroEstado)
     : equipos
@@ -206,25 +260,10 @@ export default function SubadminEquipo() {
   const equiposAsignados = equiposFiltrados.filter(eq => eq.ambulancia_id)
   const equiposDisponibles = equiposFiltrados.filter(eq => !eq.ambulancia_id)
 
-  // ==================== UTILIDADES ====================
-  const getEstadoColor = (estado) => {
-    switch(estado) {
-      case "ACTIVO": return { bg: "#dcfce7", color: "#166534", text: "✅ Activo" }
-      case "MANTENIMIENTO": return { bg: "#fef9c3", color: "#854d0e", text: "🔧 Mantenimiento" }
-      case "INACTIVO": return { bg: "#f3f4f6", color: "#4b5563", text: "⚪ Inactivo" }
-      default: return { bg: "#f3f4f6", color: "#4b5563", text: estado }
-    }
-  }
-
-  const tieneReportePendiente = (equipoId) => {
-    const equipo = equipos.find(e => e.id === equipoId)
-    if (!equipo?.reportes || equipo.reportes.length === 0) return false
-    return equipo.reportes.some(r => r.estado === "PENDIENTE" || r.estado === "EN_REVISION")
-  }
-
+  // ===== RENDER =====
   if (cargando) {
     return (
-      <SubadminLayout titulo="Gestión de Equipo Médico">
+      <SubadminLayout titulo="Gestión de equipo médico">
         <div className="loading-container">
           <div className="loading-spinner">
             <span>⟳</span>
@@ -237,37 +276,37 @@ export default function SubadminEquipo() {
 
   return (
     <SubadminLayout 
-      titulo="Gestión de Equipo Médico"
+      titulo="Gestión de equipo médico"
       subtitulo="Asigna equipos con serie a ambulancias y reporta problemas de equipos generales"
     >
       <div className="subadmin-equipo-container">
         
-        {/* Banner */}
+        {/* BANNER */}
         <div className="equipo-banner">
           <div className="equipo-banner-icon">🧰</div>
           <div className="equipo-banner-text">
-            <h2>Gestión de Equipo Médico</h2>
+            <h2>Gestión de equipo médico</h2>
             <p>Administra equipos con serie y reporta novedades de equipos generales</p>
           </div>
         </div>
 
-        {/* Pestañas de navegación */}
+        {/* PESTAÑAS */}
         <div className="equipo-tabs">
           <button
             className={`tab-button ${tipoVista === "individual" ? "active" : ""}`}
             onClick={() => setTipoVista("individual")}
           >
-            <span>🔢</span> Equipos con Serie ({equipos.length})
+            <span></span> Equipos con serie ({equipos.length})
           </button>
           <button
             className={`tab-button ${tipoVista === "general" ? "active" : ""}`}
             onClick={() => setTipoVista("general")}
           >
-            <span>📦</span> Equipos Generales ({equiposGenerales.length})
+            <span></span> Equipos generales ({equiposGenerales.length})
           </button>
         </div>
 
-        {/* Filtros */}
+        {/* FILTROS */}
         <div className="equipo-filtros">
           <div className="filtro-group">
             <label>Filtrar por estado:</label>
@@ -275,12 +314,12 @@ export default function SubadminEquipo() {
               <option value="">Todos</option>
               <option value="ACTIVO">✅ Activos</option>
               <option value="MANTENIMIENTO">🔧 Mantenimiento</option>
-              <option value="INACTIVO">⚪ Inactivos</option>
+              <option value="INACTIVO">❌ Inactivos</option>
             </select>
           </div>
         </div>
 
-        {/* VISTA DE EQUIPOS CON SERIE */}
+        {/* ===== VISTA DE EQUIPOS CON SERIE ===== */}
         {tipoVista === "individual" && (
           <>
             {/* Equipos Asignados por Ambulancia */}
@@ -425,13 +464,13 @@ export default function SubadminEquipo() {
           </>
         )}
 
-        {/* VISTA DE EQUIPOS GENERALES - CORREGIDA */}
+        {/* ===== VISTA DE EQUIPOS GENERALES ===== */}
         {tipoVista === "general" && (
           <div className="equipo-section">
             <div className="section-header">
               <span>📦</span>
               <h3>Equipos Generales ({equiposGeneralesFiltrados.length})</h3>
-              <p className="section-note">Estos elementos están disponibles para todas las sedes</p>
+              <p className="section-note">Disponibles para todas las sedes</p>
             </div>
             <div className="equipos-generales-grid">
               {equiposGeneralesFiltrados.length === 0 ? (
@@ -446,7 +485,6 @@ export default function SubadminEquipo() {
                     <div key={equipo.id} className="equipo-general-card">
                       <div className="equipo-general-header">
                         <div className="equipo-general-info">
-                          {/* CAMBIO IMPORTANTE: Usar los campos directos del equipo, no del modelo */}
                           <strong>{equipo.nombre || "Equipo sin nombre"}</strong>
                           <span className="estado-badge" style={estadoStyle}>
                             {estadoStyle.text}
@@ -458,14 +496,12 @@ export default function SubadminEquipo() {
                           <span className="cantidad-label">📦 Cantidad disponible:</span>
                           <span className="cantidad-valor">{equipo.cantidad} unidades</span>
                         </div>
-                        {/* CAMBIO IMPORTANTE: Mostrar categoría del equipo, no del modelo */}
                         {equipo.categoria && (
                           <div className="equipo-general-categoria">
                             <span className="categoria-label">🏷️ Categoría:</span>
                             <span className="categoria-valor">{equipo.categoria}</span>
                           </div>
                         )}
-                        {/* CAMBIO IMPORTANTE: Mostrar descripción del equipo, no del modelo */}
                         {equipo.descripcion && (
                           <p className="equipo-general-descripcion">{equipo.descripcion}</p>
                         )}
@@ -496,7 +532,7 @@ export default function SubadminEquipo() {
         )}
       </div>
 
-      {/* Modal de asignación */}
+      {/* ===== MODAL DE ASIGNACIÓN ===== */}
       {modalAsignacion && equipoSeleccionado && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -519,30 +555,25 @@ export default function SubadminEquipo() {
               </select>
             </div>
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => {
-                setModalAsignacion(false)
-                setEquipoSeleccionado(null)
-                setAmbulanciaSeleccionada("")
-              }}>Cancelar</button>
+              <button className="btn-cancel" onClick={cerrarModalAsignacion}>Cancelar</button>
               <button className="btn-save" onClick={asignarEquipo}>Asignar</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de reporte */}
+      {/* ===== MODAL DE REPORTE ===== */}
       {modalReporte && (equipoSeleccionado || consumibleSeleccionado) && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>📋 Reportar {equipoSeleccionado ? "problema de equipo" : "comentario sobre equipo general"}</h3>
             <div className="equipo-info-modal">
-              {/* CAMBIO IMPORTANTE: Mostrar información correcta según el tipo */}
               {equipoSeleccionado && (
                 <>
                   <strong>{equipoSeleccionado.modelo?.nombre || "Sin modelo"}</strong>
                   <span>N° Serie: {equipoSeleccionado.numero_serie}</span>
                   {equipoSeleccionado.ambulancia && (
-                    <span>Ambulancia: {equipoSeleccionado.ambulancia.codigo}</span>
+                    <span>🚑 Ambulancia: {equipoSeleccionado.ambulancia.codigo}</span>
                   )}
                 </>
               )}
@@ -550,9 +581,9 @@ export default function SubadminEquipo() {
                 <>
                   <strong>{consumibleSeleccionado.nombre || "Equipo sin nombre"}</strong>
                   {consumibleSeleccionado.categoria && (
-                    <span>Categoría: {consumibleSeleccionado.categoria}</span>
+                    <span>🏷️ Categoría: {consumibleSeleccionado.categoria}</span>
                   )}
-                  <span>Cantidad disponible: {consumibleSeleccionado.cantidad} unidades</span>
+                  <span>📦 Cantidad disponible: {consumibleSeleccionado.cantidad} unidades</span>
                 </>
               )}
             </div>
@@ -578,12 +609,7 @@ export default function SubadminEquipo() {
               />
             </div>
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => {
-                setModalReporte(false)
-                setEquipoSeleccionado(null)
-                setConsumibleSeleccionado(null)
-                setDescripcionReporte("")
-              }}>Cancelar</button>
+              <button className="btn-cancel" onClick={cerrarModalReporte}>Cancelar</button>
               <button 
                 className="btn-save" 
                 onClick={equipoSeleccionado ? reportarEquipo : reportarConsumible}

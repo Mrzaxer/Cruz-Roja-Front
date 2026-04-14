@@ -1,7 +1,16 @@
+/**
+ * @component ParamedicoLayout
+ * @description Layout principal para el panel de paramédico.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Contenido de la página
+ * @param {string} props.titulo - Título de la página
+ * @returns {JSX.Element}
+ */
+
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/ParamedicoLayout.css'
-import firmaInst from '../../assets/imagenes/firmainst.png' // ← Importar la imagen
+import firmaInst from '../../assets/imagenes/firmainst.png'
 
 export default function ParamedicoLayout({ children, titulo }) {
   const { user, logout } = useAuth()
@@ -14,14 +23,11 @@ export default function ParamedicoLayout({ children, titulo }) {
 
   return (
     <div className="paramedico-layout-container">
-      {/* Barra superior roja animada */}
       <div className="paramedico-top-bar"></div>
 
-      {/* Header */}
       <header className="paramedico-header">
         <div className="paramedico-header-content">
           <div className="paramedico-header-top">
-            {/* Logo y título - SOLO LA IMAGEN firmainst.png */}
             <div className="paramedico-logo-area">
               <div className="paramedico-logo-text">
                 <img 
@@ -29,13 +35,9 @@ export default function ParamedicoLayout({ children, titulo }) {
                   alt="Firma institucional Cruz Roja Mexicana" 
                   loading="lazy"
                 />
-                {/* Textos ocultos por CSS, pero los dejamos por si acaso */}
-                <h1 style={{ display: 'none' }}>CRUZ ROJA MEXICANA</h1>
-                <p style={{ display: 'none' }}>Jalisco</p>
               </div>
             </div>
 
-            {/* Área de usuario */}
             <div className="paramedico-user-area">
               <div className="paramedico-user-info">
                 <p className="paramedico-user-name">{user?.nombre || 'Usuario'}</p>
@@ -50,14 +52,12 @@ export default function ParamedicoLayout({ children, titulo }) {
         </div>
       </header>
 
-      {/* Título de página */}
       <div className="paramedico-page-title">
         <div className="paramedico-title-content">
           <h2>{titulo}</h2>
         </div>
       </div>
 
-      {/* Contenido principal */}
       <main className="paramedico-main">
         {children}
       </main>

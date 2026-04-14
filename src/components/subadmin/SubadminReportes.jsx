@@ -1,3 +1,15 @@
+/**
+ * @component SubadminReportes
+ * @description Módulo de reportes para subadministradores:
+ *              - Visualización de registros de inicio y cierre de guardia
+ *              - Filtros por rango de fechas
+ *              - Resumen estadístico (total, inicios, cierres)
+ *              - Detalle de equipos (inicio) e insumos (cierre)
+ *              - Generación de PDF completo de cierre
+ *              - Generación de Ticket de Abastecimiento (solo faltantes/excedentes)
+ * @returns {JSX.Element}
+ */
+
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -5,12 +17,23 @@ import SubadminLayout from '../layout/SubadminLayout'
 import '../../styles/SubadminReportes.css'
 import firmaInst from '../../assets/imagenes/firmainst.png'
 
-// Función para formatear fecha a hora de México
+// ==================== FUNCIONES DE UTILIDAD ====================
+
+/**
+ * Formatea una fecha UTC a hora local de México (GMT-6)
+ * @param {string} fechaUTC - Fecha en formato UTC
+ * @returns {string} Fecha formateada en hora de México
+ */
 const formatearFechaLocal = (fechaUTC) => {
   if (!fechaUTC) return '-'
   
-  return new Date(fechaUTC).toLocaleString('es-MX', {
-    timeZone: 'America/Mexico_City',
+  const fecha = new Date(fechaUTC)
+  // Ajustar a GMT-6 (hora centro de México)
+  const offset = -6
+  const utc = fecha.getTime() + (fecha.getTimezoneOffset() * 60000)
+  const fechaMexico = new Date(utc + (offset * 3600000))
+  
+  return fechaMexico.toLocaleString('es-MX', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -20,11 +43,20 @@ const formatearFechaLocal = (fechaUTC) => {
   })
 }
 
-// Función para formatear fecha para impresión
+/**
+ * Formatea una fecha UTC para impresión (formato largo)
+ * @param {string} fechaUTC - Fecha en formato UTC
+ * @returns {string} Fecha formateada para impresión
+ */
 const formatearFechaImpresion = (fechaUTC) => {
   if (!fechaUTC) return '-'
   
-  return new Date(fechaUTC).toLocaleString('es-MX', {
+  const fecha = new Date(fechaUTC)
+  const offset = -6
+  const utc = fecha.getTime() + (fecha.getTimezoneOffset() * 60000)
+  const fechaMexico = new Date(utc + (offset * 3600000))
+  
+  return fechaMexico.toLocaleString('es-MX', {
     timeZone: 'America/Mexico_City',
     year: 'numeric',
     month: 'long',
@@ -35,10 +67,15 @@ const formatearFechaImpresion = (fechaUTC) => {
   })
 }
 
-// Función para generar PDF de Cierre (completo)
+/**
+ * Genera PDF completo del cierre de guardia
+ * @param {Object} registro - Registro de cierre
+ * @param {Array} detalles - Detalles de insumos del cierre
+ */
 const generarPDF = (registro, detalles) => {
   const ventanaPDF = window.open('', '_blank')
   
+  // Agrupar por categoría
   const detallesPorCategoria = {}
   detalles.forEach(detalle => {
     const categoria = detalle.insumo?.categoria || 'Sin categoría'
@@ -84,7 +121,6 @@ const generarPDF = (registro, detalles) => {
           background: white;
         }
         
-        /* Header */
         .header { 
           display: flex; 
           align-items: center; 
@@ -123,7 +159,6 @@ const generarPDF = (registro, detalles) => {
           font-weight: bold; 
         }
         
-        /* Información del registro */
         .info-section { 
           background: linear-gradient(135deg, #f8f9fa, #e9ecef);
           padding: 18px 20px; 
@@ -153,7 +188,6 @@ const generarPDF = (registro, detalles) => {
           color: #212529;
         }
         
-        /* Categorías */
         .categoria { 
           margin-bottom: 30px; 
           page-break-inside: avoid; 
@@ -170,7 +204,6 @@ const generarPDF = (registro, detalles) => {
           letter-spacing: 0.5px;
         }
         
-        /* Tablas */
         table { 
           width: 100%; 
           border-collapse: collapse; 
@@ -193,7 +226,6 @@ const generarPDF = (registro, detalles) => {
           font-size: 13px; 
         }
         
-        /* Badges de estado */
         .badge { 
           display: inline-block; 
           padding: 4px 10px; 
@@ -217,7 +249,6 @@ const generarPDF = (registro, detalles) => {
           color: #166534; 
         }
         
-        /* Observaciones */
         .observaciones { 
           margin-top: 25px; 
           padding: 15px 20px; 
@@ -232,7 +263,6 @@ const generarPDF = (registro, detalles) => {
           margin-bottom: 8px;
         }
         
-        /* Footer */
         .footer { 
           margin-top: 35px; 
           text-align: center; 
@@ -242,7 +272,6 @@ const generarPDF = (registro, detalles) => {
           padding-top: 20px; 
         }
         
-        /* Botón de impresión */
         .print-button {
           text-align: center;
           margin-top: 20px;
@@ -266,7 +295,6 @@ const generarPDF = (registro, detalles) => {
           box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
         }
         
-        /* Estilos para impresión */
         @media print {
           body {
             margin: 0;
@@ -400,8 +428,11 @@ const generarPDF = (registro, detalles) => {
   ventanaPDF.document.close()
 }
 
-// Función para generar Ticket de Abastecimiento (solo faltantes y excedentes)
-// Función para generar Ticket de Abastecimiento (solo faltantes y excedentes) - VERSIÓN LEGIBLE
+/**
+ * Genera Ticket de Abastecimiento (solo insumos faltantes y excedentes)
+ * @param {Object} registro - Registro de cierre
+ * @param {Array} detalles - Detalles de insumos del cierre
+ */
 const generarTicketAbastecimiento = (registro, detalles) => {
   const ventanaTicket = window.open('', '_blank')
   
@@ -427,7 +458,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
     minute: '2-digit'
   })
 
-  // Calcular totales
   const totalFaltantes = insumosFaltantes.reduce((sum, d) => sum + ((d.cantidad_establecida || 0) - (d.cantidad_registrada || 0)), 0)
   const totalExcedentes = insumosExcedentes.reduce((sum, d) => sum + ((d.cantidad_registrada || 0) - (d.cantidad_establecida || 0)), 0)
 
@@ -454,7 +484,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           padding: 20px;
         }
         
-        /* Estilo tipo ticket */
         .ticket { 
           max-width: 400px; 
           width: 100%;
@@ -470,7 +499,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           padding: 16px 14px;
         }
         
-        /* Header */
         .header { 
           text-align: center; 
           border-bottom: 1px dashed #ccc; 
@@ -503,7 +531,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           font-weight: 600;
         }
         
-        /* Información */
         .info { 
           background: #f5f5f5; 
           padding: 10px 12px; 
@@ -521,7 +548,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           color: #333;
         }
         
-        /* Totales */
         .totales {
           display: flex;
           justify-content: space-between;
@@ -548,7 +574,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           color: #1e40af;
         }
         
-        /* Sección de insumos */
         .seccion { 
           margin-bottom: 14px; 
         }
@@ -572,7 +597,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           color: #1e40af; 
         }
         
-        /* Tabla de insumos */
         .tabla-insumos {
           width: 100%;
           border-collapse: collapse;
@@ -618,7 +642,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           margin-right: 2px;
         }
         
-        /* Mensaje cuando no hay nada */
         .empty-message {
           text-align: center;
           padding: 20px;
@@ -630,7 +653,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           color: #166534;
         }
         
-        /* Sección de abastecimiento */
         .abastecimiento { 
           margin-top: 14px; 
           padding-top: 10px; 
@@ -686,7 +708,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           margin-top: 2px;
         }
         
-        /* Firma */
         .firma { 
           margin-top: 14px; 
           text-align: center; 
@@ -709,7 +730,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           color: #666;
         }
         
-        /* Footer */
         .footer { 
           text-align: center; 
           font-size: 9px; 
@@ -719,7 +739,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           border-top: 1px solid #eee;
         }
         
-        /* Botón de impresión */
         .print-button {
           text-align: center;
           margin-top: 12px;
@@ -745,7 +764,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
           transform: translateY(-1px);
         }
         
-        /* Estilos para impresión */
         @media print {
           body {
             background: white;
@@ -778,7 +796,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
       <div class="ticket">
         <div class="ticket-content">
           
-          <!-- Header -->
           <div class="header">
             <div class="header-logo">
               <img src="${firmaInst}" alt="Cruz Roja Mexicana" />
@@ -789,13 +806,11 @@ const generarTicketAbastecimiento = (registro, detalles) => {
             </div>
           </div>
           
-          <!-- Información -->
           <div class="info">
-            <p><strong>📅 Fecha:</strong> ${formatearFechaLocal(registro.fecha)}</p>
+            <p><strong>📅 Fecha:</strong> ${formatearFechaImpresion(registro.fecha)}</p>
             <p><strong>👤 Paramédico:</strong> ${registro.usuarios?.nombre || 'N/A'}</p>
           </div>
           
-          <!-- Totales -->
           <div class="totales">
             ${insumosFaltantes.length > 0 ? `
               <div class="total-item total-faltante">
@@ -809,7 +824,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
             ` : ''}
           </div>
           
-          <!-- Insumos Faltantes -->
           ${insumosFaltantes.length > 0 ? `
             <div class="seccion">
               <div class="seccion-titulo faltante">
@@ -831,7 +845,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
             </div>
           ` : ''}
           
-          <!-- Insumos Excedentes -->
           ${insumosExcedentes.length > 0 ? `
             <div class="seccion">
               <div class="seccion-titulo excedente">
@@ -853,14 +866,12 @@ const generarTicketAbastecimiento = (registro, detalles) => {
             </div>
           ` : ''}
           
-          <!-- Mensaje cuando todo está bien -->
           ${insumosFaltantes.length === 0 && insumosExcedentes.length === 0 ? `
             <div class="empty-message">
               ✅ Todos los insumos están en la cantidad establecida
             </div>
           ` : ''}
           
-          <!-- Sección de abastecimiento -->
           <div class="abastecimiento">
             <div class="abastecimiento-titulo">📋 REGISTRO DE ABASTECIMIENTO</div>
             <div class="opciones">
@@ -880,7 +891,6 @@ const generarTicketAbastecimiento = (registro, detalles) => {
             </div>
           </div>
           
-          <!-- Firma -->
           <div class="firma">
             <div class="firma-linea">
               _________________________________
@@ -889,12 +899,10 @@ const generarTicketAbastecimiento = (registro, detalles) => {
             <div class="firma-texto">Fecha: ___/___/______</div>
           </div>
           
-          <!-- Footer -->
           <div class="footer">
             <p>Generado: ${fechaGeneracion} | Sistema Cruz Roja</p>
           </div>
           
-          <!-- Botón impresión -->
           <div class="print-button">
             <button onclick="window.print()">🖨️ Imprimir Ticket</button>
           </div>
@@ -908,8 +916,12 @@ const generarTicketAbastecimiento = (registro, detalles) => {
   ventanaTicket.document.close()
 }
 
+// ==================== COMPONENTE PRINCIPAL ====================
+
 export default function SubadminReportes() {
   const { user } = useAuth()
+  
+  // ===== ESTADOS =====
   const [fechaI, setFechaI] = useState(new Date().toISOString().split('T')[0])
   const [fechaF, setFechaF] = useState(new Date().toISOString().split('T')[0])
   const [registros, setRegistros] = useState([])
@@ -923,12 +935,16 @@ export default function SubadminReportes() {
     cierres: 0
   })
 
+  // ===== CARGA DE DATOS =====
   useEffect(() => {
     if (user?.sede_id) cargarReportes()
   }, [fechaI, fechaF])
 
+  /**
+   * Carga los reportes del período seleccionado
+   */
   const cargarReportes = async () => {
-    const { data: registrosData, error } = await supabase
+    const { data: registrosData } = await supabase
       .from('registros')
       .select(`
         id,
@@ -944,11 +960,7 @@ export default function SubadminReportes() {
       .lte('fecha', fechaF + ' 23:59:59')
       .order('fecha', { ascending: false })
 
-    if (error) {
-      console.error('Error cargando registros:', error)
-      return
-    }
-
+    // Enriquecer con nombres de ambulancia y paramédico
     const registrosConRelaciones = await Promise.all(
       (registrosData || []).map(async (registro) => {
         const { data: ambulancia } = await supabase
@@ -983,13 +995,18 @@ export default function SubadminReportes() {
     })
   }
 
+  /**
+   * Carga los detalles de un registro específico
+   * @param {Object} registro - Registro seleccionado
+   */
   const verDetalles = async (registro) => {
     setRegistroSeleccionado(registro)
     setModalAbierto(true)
     setCargandoDetalles(true)
 
     if (registro.tipo === 'INICIO') {
-      const { data, error } = await supabase
+      // Cargar detalles de equipos para inicio de guardia
+      const { data } = await supabase
         .from('detalle_equipos')
         .select(`
           id,
@@ -1009,40 +1026,36 @@ export default function SubadminReportes() {
         `)
         .eq('registro_id', registro.id)
 
-      if (error) {
-        console.error('Error cargando detalles de inicio:', error)
-        setDetalles([])
-      } else {
-        const detallesFormateados = (data || []).map(detalle => {
-          const equipo = detalle.equipo
-          if (equipo.tipo === 'GENERAL') {
-            return {
-              ...detalle,
-              equipo: {
-                ...equipo,
-                nombre_mostrar: equipo.nombre || 'Equipo sin nombre',
-                descripcion_mostrar: equipo.descripcion || '',
-                categoria_mostrar: equipo.categoria || '',
-                tipo_equipo: 'GENERAL'
-              }
-            }
-          } else {
-            return {
-              ...detalle,
-              equipo: {
-                ...equipo,
-                nombre_mostrar: equipo.modelo?.nombre || 'Equipo sin modelo',
-                descripcion_mostrar: equipo.modelo?.descripcion || '',
-                categoria_mostrar: equipo.modelo?.categoria || '',
-                tipo_equipo: 'INDIVIDUAL'
-              }
+      const detallesFormateados = (data || []).map(detalle => {
+        const equipo = detalle.equipo
+        if (equipo.tipo === 'GENERAL') {
+          return {
+            ...detalle,
+            equipo: {
+              ...equipo,
+              nombre_mostrar: equipo.nombre || 'Equipo sin nombre',
+              descripcion_mostrar: equipo.descripcion || '',
+              categoria_mostrar: equipo.categoria || '',
+              tipo_equipo: 'GENERAL'
             }
           }
-        })
-        setDetalles(detallesFormateados)
-      }
+        } else {
+          return {
+            ...detalle,
+            equipo: {
+              ...equipo,
+              nombre_mostrar: equipo.modelo?.nombre || 'Equipo sin modelo',
+              descripcion_mostrar: equipo.modelo?.descripcion || '',
+              categoria_mostrar: equipo.modelo?.categoria || '',
+              tipo_equipo: 'INDIVIDUAL'
+            }
+          }
+        }
+      })
+      setDetalles(detallesFormateados)
     } else {
-      const { data, error } = await supabase
+      // Cargar detalles de insumos para cierre de guardia
+      const { data } = await supabase
         .from('detalle_insumos')
         .select(`
           id,
@@ -1057,36 +1070,40 @@ export default function SubadminReportes() {
           )
         `)
         .eq('registro_id', registro.id)
-
-      if (error) {
-        console.error('Error cargando detalles de cierre:', error)
-        setDetalles([])
-      } else {
-        setDetalles(data || [])
-      }
+      setDetalles(data || [])
     }
 
     setCargandoDetalles(false)
   }
 
+  /**
+   * Descarga el PDF completo del cierre
+   */
   const descargarPDF = () => {
     if (registroSeleccionado && detalles.length > 0) {
       generarPDF(registroSeleccionado, detalles)
     }
   }
 
+  /**
+   * Descarga el Ticket de Abastecimiento
+   */
   const descargarTicket = () => {
     if (registroSeleccionado && detalles.length > 0) {
       generarTicketAbastecimiento(registroSeleccionado, detalles)
     }
   }
 
+  /**
+   * Cierra el modal de detalles
+   */
   const cerrarModal = () => {
     setModalAbierto(false)
     setRegistroSeleccionado(null)
     setDetalles([])
   }
 
+  // ===== RENDER =====
   return (
     <SubadminLayout 
       titulo="Reportes de Sede"
@@ -1094,27 +1111,55 @@ export default function SubadminReportes() {
     >
       <div className="reportes-container">
         
+        {/* FILTROS DE FECHA */}
         <div className="filtros-fecha">
           <div className="filtro-group">
             <label className="filtro-label">Fecha Inicio</label>
-            <input type="date" className="filtro-input" value={fechaI} onChange={(e) => setFechaI(e.target.value)} />
+            <input 
+              type="date" 
+              className="filtro-input" 
+              value={fechaI} 
+              onChange={(e) => setFechaI(e.target.value)} 
+            />
           </div>
           <div className="filtro-group">
             <label className="filtro-label">Fecha Fin</label>
-            <input type="date" className="filtro-input" value={fechaF} onChange={(e) => setFechaF(e.target.value)} />
+            <input 
+              type="date" 
+              className="filtro-input" 
+              value={fechaF} 
+              onChange={(e) => setFechaF(e.target.value)} 
+            />
           </div>
         </div>
 
+        {/* TARJETAS DE RESUMEN */}
         <div className="resumen-grid">
-          <div className="resumen-card total"><div className="resumen-icon">📋</div><div className="resumen-label">Total Registros</div><div className="resumen-valor">{resumen.total}</div></div>
-          <div className="resumen-card inicios"><div className="resumen-icon">🚑</div><div className="resumen-label">Inicios</div><div className="resumen-valor">{resumen.inicios}</div></div>
-          <div className="resumen-card cierres"><div className="resumen-icon">✅</div><div className="resumen-label">Cierres</div><div className="resumen-valor">{resumen.cierres}</div></div>
+          <div className="resumen-card total">
+            <div className="resumen-icon">📋</div>
+            <div className="resumen-label">Total Registros</div>
+            <div className="resumen-valor">{resumen.total}</div>
+          </div>
+          <div className="resumen-card inicios">
+            <div className="resumen-icon">🚑</div>
+            <div className="resumen-label">Inicios de Guardia</div>
+            <div className="resumen-valor">{resumen.inicios}</div>
+          </div>
+          <div className="resumen-card cierres">
+            <div className="resumen-icon">✅</div>
+            <div className="resumen-label">Cierres de Guardia</div>
+            <div className="resumen-valor">{resumen.cierres}</div>
+          </div>
         </div>
 
+        {/* TABLA DE REGISTROS */}
         <div className="registros-table-container">
           <h3 className="registros-titulo">Registros del período</h3>
           {registros.length === 0 ? (
-            <div className="empty-state"><span className="empty-icon">📭</span><p>No hay registros en este período</p></div>
+            <div className="empty-state">
+              <span className="empty-icon">📭</span>
+              <p>No hay registros en este período</p>
+            </div>
           ) : (
             <div className="table-responsive">
               <table className="registros-table">
@@ -1131,10 +1176,26 @@ export default function SubadminReportes() {
                   {registros.map(r => (
                     <tr key={r.id}>
                       <td>{formatearFechaLocal(r.fecha)}</td>
-                      <td><span className={`tipo-badge ${r.tipo === 'INICIO' ? 'inicio' : 'cierre'}`}>{r.tipo}</span></td>
+                      <td>
+                        <span className={`tipo-badge ${r.tipo === 'INICIO' ? 'inicio' : 'cierre'}`}>
+                          {r.tipo === 'INICIO' ? '🚑 Inicio' : '✅ Cierre'}
+                        </span>
+                      </td>
                       <td>{r.ambulancias?.codigo || '-'}</td>
-                      <td><div className="usuario-info"><span className="usuario-nombre">{r.usuarios?.nombre || '-'}</span><span className="usuario-correo">{r.usuarios?.correo || ''}</span></div></td>
-                      <td><button onClick={() => verDetalles(r)} className={`btn-ver-detalles ${r.tipo === 'INICIO' ? 'inicio' : 'cierre'}`}><span>📋</span> Ver {r.tipo === 'INICIO' ? 'Inicio' : 'Cierre'}</button></td>
+                      <td>
+                        <div className="usuario-info">
+                          <span className="usuario-nombre">{r.usuarios?.nombre || '-'}</span>
+                          <span className="usuario-correo">{r.usuarios?.correo || ''}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <button 
+                          onClick={() => verDetalles(r)} 
+                          className={`btn-ver-detalles ${r.tipo === 'INICIO' ? 'inicio' : 'cierre'}`}
+                        >
+                          <span>📋</span> Ver {r.tipo === 'INICIO' ? 'Inicio' : 'Cierre'}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1144,26 +1205,33 @@ export default function SubadminReportes() {
         </div>
       </div>
 
-      {/* Modal de detalles */}
+      {/* MODAL DE DETALLES */}
       {modalAbierto && registroSeleccionado && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2 className="modal-title">{registroSeleccionado.tipo === 'INICIO' ? '🚑 Inicio de Guardia' : '✅ Cierre de Guardia'}</h2>
+              <h2 className="modal-title">
+                {registroSeleccionado.tipo === 'INICIO' ? '🚑 Inicio de Guardia' : '✅ Cierre de Guardia'}
+              </h2>
               <button onClick={cerrarModal} className="modal-close">✕</button>
             </div>
 
             <div className="modal-info">
-              <p><strong>Fecha:</strong> {formatearFechaLocal(registroSeleccionado.fecha)}</p>
-              <p><strong>Ambulancia:</strong> {registroSeleccionado.ambulancias?.codigo}</p>
-              <p><strong>Paramédico:</strong> {registroSeleccionado.usuarios?.nombre}</p>
-              {registroSeleccionado.observaciones && <p><strong>Observaciones:</strong> {registroSeleccionado.observaciones}</p>}
+              <p><strong>📅 Fecha:</strong> {formatearFechaLocal(registroSeleccionado.fecha)}</p>
+              <p><strong>🚑 Ambulancia:</strong> {registroSeleccionado.ambulancias?.codigo}</p>
+              <p><strong>👤 Paramédico:</strong> {registroSeleccionado.usuarios?.nombre}</p>
+              {registroSeleccionado.observaciones && (
+                <p><strong>📝 Observaciones:</strong> {registroSeleccionado.observaciones}</p>
+              )}
             </div>
 
-            <h3 className="detalles-titulo">Detalles ({detalles.length}):</h3>
+            <h3 className="detalles-titulo">Detalles ({detalles.length})</h3>
 
             {cargandoDetalles ? (
-              <div className="loading-container"><span className="loading-spinner">⟳</span><p className="loading-text">Cargando detalles...</p></div>
+              <div className="loading-container">
+                <span className="loading-spinner">⟳</span>
+                <p className="loading-text">Cargando detalles...</p>
+              </div>
             ) : (
               <div className="detalles-lista">
                 {detalles.length === 0 ? (
@@ -1172,11 +1240,12 @@ export default function SubadminReportes() {
                   detalles.map((detalle, index) => (
                     <div key={detalle.id || index} className="detalle-item">
                       {registroSeleccionado.tipo === 'INICIO' ? (
+                        // Detalle de EQUIPO (inicio)
                         <>
                           <div className="detalle-header">
                             <span className="detalle-nombre">{detalle.equipo?.nombre_mostrar || 'Equipo sin nombre'}</span>
                             {detalle.equipo?.tipo_equipo === 'INDIVIDUAL' && detalle.equipo?.numero_serie && (
-                              <span className="detalle-serie">N° {detalle.equipo.numero_serie}</span>
+                              <span className="detalle-serie">🔢 N° {detalle.equipo.numero_serie}</span>
                             )}
                             {detalle.equipo?.tipo_equipo === 'GENERAL' && detalle.cantidad_registrada !== undefined && (
                               <span className="detalle-cantidad-badge">Cantidad: {detalle.cantidad_registrada}</span>
@@ -1195,21 +1264,22 @@ export default function SubadminReportes() {
                           {detalle.equipo?.descripcion_mostrar && (
                             <p className="detalle-descripcion">{detalle.equipo.descripcion_mostrar}</p>
                           )}
-                          {detalle.equipo?.tipo_equipo === 'GENERAL' && detalle.equipo?.cantidad && (
-                            <p className="detalle-cantidad-establecida">
-                              Cantidad establecida: <strong>{detalle.equipo.cantidad}</strong> unidades
-                            </p>
-                          )}
                           {detalle.comentario && <p className="detalle-comentario">📝 {detalle.comentario}</p>}
                         </>
                       ) : (
+                        // Detalle de INSUMO (cierre)
                         <>
                           <div className="detalle-header">
                             <span className="detalle-nombre">{detalle.insumo?.nombre || 'Insumo sin nombre'}</span>
                             <span className="detalle-badge categoria">{detalle.insumo?.categoria || 'Sin categoría'}</span>
                           </div>
-                          {detalle.insumo?.descripcion && <p className="detalle-descripcion">{detalle.insumo.descripcion}</p>}
-                          <p className="detalle-cantidad">Cantidad establecida: <strong>{detalle.cantidad_establecida || 0}</strong> | Registrada: <strong>{detalle.cantidad_registrada || 0}</strong></p>
+                          {detalle.insumo?.descripcion && (
+                            <p className="detalle-descripcion">{detalle.insumo.descripcion}</p>
+                          )}
+                          <p className="detalle-cantidad">
+                            Cantidad establecida: <strong>{detalle.cantidad_establecida || 0}</strong> | 
+                            Registrada: <strong>{detalle.cantidad_registrada || 0}</strong>
+                          </p>
                           {detalle.comentario && <p className="detalle-comentario">📝 {detalle.comentario}</p>}
                         </>
                       )}
@@ -1222,11 +1292,17 @@ export default function SubadminReportes() {
             <div className="modal-actions">
               {registroSeleccionado.tipo === 'CIERRE' && detalles.length > 0 && (
                 <>
-                  <button onClick={descargarPDF} className="btn-pdf"><span>📄</span> Descargar PDF Completo</button>
-                  <button onClick={descargarTicket} className="btn-ticket"><span>🎫</span> Ticket Abastecimiento</button>
+                  <button onClick={descargarPDF} className="btn-pdf">
+                    <span>📄</span> Descargar PDF Completo
+                  </button>
+                  <button onClick={descargarTicket} className="btn-ticket">
+                    <span>🎫</span> Ticket Abastecimiento
+                  </button>
                 </>
               )}
-              <button onClick={cerrarModal} className="btn-cerrar">Cerrar</button>
+              <button onClick={cerrarModal} className="btn-cerrar">
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

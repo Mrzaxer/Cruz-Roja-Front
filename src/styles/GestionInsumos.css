@@ -1,13 +1,10 @@
-/* ===== GESTIÓN DE INSUMOS - CRUZ ROJA MEXICANA ===== */
+/* ===== GESTIÓN DE INSUMOS ===== */
+
 :root {
   --rojo-principal: #b22222;
   --rojo-oscuro: #8b0000;
   --rojo-claro: #fee2e2;
-  --azul-claro: #dbeafe;
-  --verde-claro: #dcfce7;
   --verde-exito: #10b981;
-  --amarillo-claro: #fef9c3;
-  --morado-claro: #f3e8ff;
   --gris-fondo: #f3f4f6;
   --blanco: #ffffff;
   --gris-100: #f9fafb;
@@ -34,7 +31,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Banner de insumos */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== BANNER ===== */
 .insumos-banner {
   background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
   border-radius: 16px;
@@ -82,7 +84,7 @@
   font-size: 0.9rem;
 }
 
-/* Grid de dos columnas */
+/* ===== GRID ===== */
 .insumos-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -95,7 +97,7 @@
   }
 }
 
-/* Tarjeta de creación */
+/* ===== TARJETA DE CREACIÓN ===== */
 .insumos-card {
   background-color: var(--blanco);
   border-radius: 16px;
@@ -128,7 +130,7 @@
   padding: 1.5rem;
 }
 
-/* Formulario */
+/* ===== FORMULARIO ===== */
 .insumos-form {
   display: flex;
   flex-direction: column;
@@ -167,23 +169,7 @@
   box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
 }
 
-.form-group input::placeholder {
-  color: var(--gris-400);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 480px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Botón de creación */
+/* ===== BOTÓN CREAR ===== */
 .btn-crear {
   background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
   color: white;
@@ -207,16 +193,12 @@
   box-shadow: 0 8px 15px rgba(178, 34, 34, 0.4);
 }
 
-.btn-crear:active {
-  transform: translateY(0);
-}
-
 .btn-crear:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Lista de insumos */
+/* ===== LISTA DE INSUMOS ===== */
 .insumos-list-card {
   background-color: var(--blanco);
   border-radius: 16px;
@@ -250,7 +232,7 @@
   overflow-y: auto;
 }
 
-/* Items de insumos */
+/* ===== ITEM DE INSUMO ===== */
 .insumo-item {
   background-color: var(--gris-100);
   border: 2px solid var(--gris-200);
@@ -258,7 +240,6 @@
   padding: 1.25rem;
   margin-bottom: 1rem;
   transition: all 0.2s;
-  position: relative;
 }
 
 .insumo-item:hover {
@@ -276,6 +257,8 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .insumo-nombre {
@@ -291,8 +274,6 @@
 }
 
 .insumo-badge {
-  background-color: var(--rojo-claro);
-  color: var(--rojo-principal);
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.75rem;
@@ -375,7 +356,7 @@
   color: white;
 }
 
-/* Empty state */
+/* ===== EMPTY STATE ===== */
 .empty-state {
   text-align: center;
   padding: 3rem;
@@ -392,31 +373,7 @@
   opacity: 0.5;
 }
 
-/* Loading */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-}
-
-.loading-spinner {
-  text-align: center;
-}
-
-.loading-spinner span {
-  font-size: 2rem;
-  animation: spin 1s linear infinite;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Responsive */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .insumos-banner {
     padding: 1.25rem;

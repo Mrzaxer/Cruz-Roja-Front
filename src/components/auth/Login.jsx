@@ -1,3 +1,12 @@
+/**
+ * @component Login
+ * @description Pantalla de inicio de sesión del sistema.
+ *              - Autentica usuarios contra la tabla 'usuarios' en Supabase
+ *              - Redirige según el rol del usuario (ADMIN, SUBADMIN, PARAMEDICO)
+ *              - Manejo de errores y estado de carga
+ * @returns {JSX.Element}
+ */
+
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -5,6 +14,7 @@ import '../../styles/login.css'
 import firmaInst from '../../assets/imagenes/firmainst.png'
 
 export default function Login() {
+  // ===== ESTADOS =====
   const [formData, setFormData] = useState({
     correo: '',
     password: ''
@@ -15,6 +25,10 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
+  /**
+   * Maneja los cambios en los inputs del formulario
+   * @param {Event} e - Evento del input
+   */
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -23,6 +37,10 @@ export default function Login() {
     }))
   }
 
+  /**
+   * Maneja el envío del formulario de login
+   * @param {Event} e - Evento del formulario
+   */
   const handleSubmit = async (e) => {
     e.preventDefault()
     setCargando(true)
@@ -31,6 +49,7 @@ export default function Login() {
     const result = await login(formData.correo.trim(), formData.password.trim())
     
     if (result.success) {
+      // Redirigir según el rol del usuario
       const routes = {
         ADMIN: '/admin',
         SUBADMIN: '/subadmin',
@@ -46,8 +65,10 @@ export default function Login() {
 
   return (
     <div className="login-container">
+      {/* Barra superior animada */}
       <div className="top-bar" aria-hidden="true"></div>
 
+      {/* Header con logo */}
       <header className="login-header">
         <div className="header-content">
           <div className="titulo">
@@ -60,6 +81,7 @@ export default function Login() {
         </div>
       </header>
 
+      {/* Banner institucional */}
       <div className="banner" aria-label="Banner institucional">
         <div className="banner-content">
           <h2>Sistema de Control de Ambulancias</h2>
@@ -67,11 +89,13 @@ export default function Login() {
         </div>
       </div>
 
+      {/* Contenido principal - Formulario de login */}
       <main className="main-content">
         <div className="login-card">
-          <h3 className="card-title">Acceso al Sistema</h3>
+          <h3 className="card-title">Acceso al sistema</h3>
           <p className="card-subtitle">Ingrese con sus credenciales institucionales</p>
 
+          {/* Mensaje de error */}
           {error && (
             <div className="error-message" role="alert">
               <span aria-hidden="true">⚠️</span>
@@ -116,12 +140,13 @@ export default function Login() {
               disabled={cargando}
               aria-busy={cargando}
             >
-              {cargando ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {cargando ? '⏳ Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </form>
         </div>
       </main>
 
+      {/* Footer */}
       <footer className="login-footer">
         <div className="footer-content">
           <div className="footer-bottom">

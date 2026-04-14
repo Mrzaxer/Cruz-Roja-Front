@@ -1,30 +1,13 @@
-/* ===== ADMIN LAYOUT - UNIFICADO CON PARAMEDICO ===== */
+/* ===== ADMIN LAYOUT ===== */
+
 :root {
   --rojo-principal: #e53e3e;
   --rojo-oscuro: #c53030;
-  --rojo-claro: #fff5f5;
-  --rojo-hover: #feb2b2;
   --gris-fondo: #f7fafc;
   --gris-texto: #4a5568;
   --gris-claro: #718096;
   --blanco: #ffffff;
   --sombra: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --breakpoint-mobile: 640px;
-  --breakpoint-tablet: 768px;
-  --breakpoint-desktop: 1024px;
-}
-
-/* MODO OSCURO - EXACTAMENTE EL MISMO CONTRASTE */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --gris-fondo: #f7fafc;
-    --blanco: #ffffff;
-    --gris-texto: #4a5568;
-    --gris-claro: #718096;
-    --sombra: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --sombra-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
 }
 
 * {
@@ -41,32 +24,16 @@
   flex-direction: column;
 }
 
-/* Mismo fondo en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-layout-container {
-    background-color: var(--gris-fondo);
-  }
-}
-
-/* Barra superior */
 .admin-top-bar {
-  background: linear-gradient(90deg, var(--rojo-principal), var(--rojo-oscuro), var(--rojo-principal));
+  background: linear-gradient(90deg, var(--rojo-principal), var(--rojo-oscuro));
   height: 4px;
   width: 100%;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 50;
-  animation: gradientShift 8s ease infinite;
-  background-size: 200% 200%;
 }
 
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* Header */
 .admin-header {
   background-color: var(--blanco);
   border-bottom: 1px solid rgba(229, 62, 62, 0.1);
@@ -78,24 +45,11 @@
   box-shadow: var(--sombra);
 }
 
-/* Mismo borde en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-header {
-    border-bottom: 1px solid rgba(229, 62, 62, 0.1);
-  }
-}
-
 .admin-header-content {
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 1rem 2rem;
-}
-
-@media (max-width: 768px) {
-  .admin-header-content {
-    padding: 1rem;
-  }
 }
 
 .admin-header-top {
@@ -106,24 +60,10 @@
   gap: 1rem;
 }
 
-/* Logo y título - SOLO LA IMAGEN */
 .admin-logo-area {
   display: flex;
   align-items: center;
   flex: 1;
-}
-
-.admin-logo {
-  display: none; /* OCULTO - No se usa */
-}
-
-.admin-logo span {
-  display: none;
-}
-
-.admin-logo-text {
-  display: flex;
-  align-items: center;
 }
 
 .admin-logo-text img.admin-firma-img {
@@ -132,23 +72,10 @@
   object-fit: contain;
 }
 
-/* Ocultar textos viejos */
-.admin-logo-text h1,
-.admin-logo-text p {
-  display: none;
-}
-
-/* Área de usuario */
 .admin-user-area {
   display: flex;
   align-items: center;
   gap: 2rem;
-}
-
-@media (max-width: 768px) {
-  .admin-user-area {
-    gap: 1rem;
-  }
 }
 
 .admin-user-info {
@@ -162,24 +89,10 @@
   white-space: nowrap;
 }
 
-/* Mismo color de nombre en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-user-name {
-    color: #2d3748;
-  }
-}
-
 .admin-user-role {
   font-size: 0.8rem;
   color: var(--gris-claro);
   text-align: right;
-}
-
-/* Mismo color de rol en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-user-role {
-    color: var(--gris-claro);
-  }
 }
 
 .admin-btn-logout {
@@ -196,28 +109,13 @@
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(229, 62, 62, 0.2);
 }
 
 .admin-btn-logout:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
-  background: linear-gradient(135deg, var(--rojo-oscuro), var(--rojo-principal));
 }
 
-/* Mismo botón en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-btn-logout {
-    background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
-    box-shadow: 0 1px 3px rgba(229, 62, 62, 0.2);
-  }
-  
-  .admin-btn-logout:hover {
-    box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
-  }
-}
-
-/* Navegación */
 .admin-nav {
   display: flex;
   gap: 2rem;
@@ -258,18 +156,10 @@
   font-size: 1.1rem;
 }
 
-/* Título de página */
 .admin-page-title {
   background-color: var(--blanco);
   border-bottom: 1px solid rgba(229, 62, 62, 0.1);
   width: 100%;
-}
-
-/* Mismo borde en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-page-title {
-    border-bottom: 1px solid rgba(229, 62, 62, 0.1);
-  }
 }
 
 .admin-title-content {
@@ -279,12 +169,6 @@
   padding: 1.5rem 2rem;
 }
 
-@media (max-width: 768px) {
-  .admin-title-content {
-    padding: 1rem;
-  }
-}
-
 .admin-title-content h2 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -292,19 +176,11 @@
   margin-bottom: 0.25rem;
 }
 
-/* Mismo color de título en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .admin-title-content h2 {
-    color: #2d3748;
-  }
-}
-
 .admin-subtitulo {
   color: var(--gris-claro);
   font-size: 1rem;
 }
 
-/* Contenido principal */
 .admin-main {
   width: 100%;
   max-width: 1280px;
@@ -313,16 +189,12 @@
   flex: 1;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
-  .admin-main {
+  .admin-header-content {
     padding: 1rem;
   }
-}
-
-/* ===== MEDIA QUERIES RESPONSIVOS ===== */
-
-/* Tablets */
-@media (max-width: 768px) {
+  
   .admin-header-top {
     flex-direction: column;
     align-items: flex-start;
@@ -337,11 +209,6 @@
     max-height: 50px;
   }
   
-  .admin-user-name,
-  .admin-user-role {
-    white-space: normal;
-  }
-  
   .admin-nav {
     gap: 1rem;
   }
@@ -349,9 +216,12 @@
   .admin-title-content h2 {
     font-size: 1.4rem;
   }
+  
+  .admin-main {
+    padding: 1rem;
+  }
 }
 
-/* Móviles grandes */
 @media (max-width: 640px) {
   .admin-logo-text img.admin-firma-img {
     max-height: 45px;
@@ -361,41 +231,15 @@
     font-size: 0.85rem;
   }
   
-  .admin-user-role {
-    font-size: 0.7rem;
-  }
-  
   .admin-btn-logout {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
   }
-  
-  .admin-nav-item {
-    font-size: 0.85rem;
-  }
 }
 
-/* Móviles pequeños */
 @media (max-width: 480px) {
   .admin-logo-text img.admin-firma-img {
     max-height: 38px;
-  }
-  
-  .admin-user-name {
-    font-size: 0.8rem;
-  }
-  
-  .admin-user-role {
-    font-size: 0.65rem;
-  }
-  
-  .admin-btn-logout {
-    padding: 0.35rem 0.7rem;
-    font-size: 0.75rem;
-  }
-  
-  .admin-nav {
-    justify-content: center;
   }
   
   .nav-text {
@@ -404,7 +248,6 @@
   
   .admin-nav-item {
     padding: 0.5rem;
-    font-size: 1.3rem;
   }
   
   .nav-icon {
@@ -413,53 +256,5 @@
   
   .admin-title-content h2 {
     font-size: 1.2rem;
-  }
-  
-  .admin-main {
-    padding: 0.75rem;
-  }
-}
-
-/* Móviles muy pequeños */
-@media (max-width: 360px) {
-  .admin-logo-text img.admin-firma-img {
-    max-height: 32px;
-  }
-  
-  .admin-user-area {
-    gap: 0.75rem;
-  }
-  
-  .admin-btn-logout span:first-child {
-    display: none;
-  }
-  
-  .admin-btn-logout {
-    padding: 0.35rem 0.6rem;
-  }
-}
-
-/* Soporte para pantallas táctiles */
-@media (hover: none) {
-  .admin-btn-logout:hover,
-  .admin-nav-item:hover {
-    transform: none;
-  }
-}
-
-/* Mejoras de accesibilidad */
-@media (prefers-reduced-motion: reduce) {
-  .admin-top-bar {
-    animation: none;
-  }
-  
-  .admin-btn-logout,
-  .admin-nav-item {
-    transition: none;
-  }
-  
-  .admin-btn-logout:hover,
-  .admin-nav-item:hover {
-    transform: none;
   }
 }

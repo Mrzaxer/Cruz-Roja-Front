@@ -1,4 +1,5 @@
-/* ===== SUBADMIN DASHBOARD - SOLO NOTIFICACIONES ===== */
+/* ===== SUBADMIN DASHBOARD - NOTIFICACIONES Y ACTIVIDAD ===== */
+
 :root {
   --rojo-mexicano: #b22222;
   --rojo-oscuro: #8b0000;
@@ -168,6 +169,11 @@
 .notificacion-card.info { border-left-color: #2563eb; }
 .notificacion-card.success { border-left-color: #166534; }
 
+.notificacion-card.success .notificacion-card-icono {
+  background-color: #dcfce7;
+  color: #10b981;
+}
+
 /* ===== ACTIVIDADES RECIENTES ===== */
 .actividades-recientes {
   background: var(--blanco);
@@ -260,30 +266,6 @@
   font-size: 1rem;
 }
 
-/* ===== LOADING ===== */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-
-.loading-spinner {
-  text-align: center;
-}
-
-.loading-spinner span {
-  font-size: 3rem;
-  animation: spin 1s linear infinite;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .welcome-banner {
@@ -335,15 +317,3 @@
     font-size: 0.75rem;
   }
 }
-
-/* Estilos para notificaciones de tipo success */
-.notificacion-card.success {
-  border-left-color: #166534;
-}
-
-.notificacion-card.success .notificacion-card-icono {
-  background-color: #dcfce7;
-  color: #10b981;
-}
-
-/* ===== SUBADMIN LAYOUT - RESPONSIVE ===== */

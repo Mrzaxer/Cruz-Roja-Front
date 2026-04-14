@@ -1,4 +1,6 @@
 /* ===== LOGIN INSTITUCIONAL RESPONSIVO ===== */
+/* NOTA: Se eliminó text-transform: uppercase para evitar conversión automática a mayúsculas */
+
 :root {
   --rojo-principal: #e53e3e;
   --rojo-oscuro: #c53030;
@@ -10,21 +12,6 @@
   --blanco: #ffffff;
   --sombra: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   --sombra-hover: 0 20px 30px -10px rgba(229, 62, 62, 0.2);
-  --breakpoint-mobile: 640px;
-  --breakpoint-tablet: 768px;
-  --breakpoint-desktop: 1024px;
-}
-
-/* MODO OSCuro - EXACTAMENTE EL MISMO CONTRASTE */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --gris-fondo: #f7fafc;
-    --blanco: #ffffff;
-    --gris-texto: #4a5568;
-    --gris-claro: #718096;
-    --sombra: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-    --sombra-hover: 0 20px 30px -10px rgba(229, 62, 62, 0.2);
-  }
 }
 
 * {
@@ -33,19 +20,11 @@
   box-sizing: border-box;
 }
 
-/* Contenedor principal */
 .login-container {
   min-height: 100vh;
   background: linear-gradient(135deg, var(--gris-fondo) 0%, #ffffff 100%);
   display: flex;
   flex-direction: column;
-}
-
-/* Mismo fondo en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .login-container {
-    background: linear-gradient(135deg, var(--gris-fondo) 0%, #ffffff 100%);
-  }
 }
 
 /* Barra superior animada */
@@ -72,13 +51,6 @@
   z-index: 100;
 }
 
-/* Mismo borde en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .login-header {
-    border-bottom: 1px solid rgba(229, 62, 62, 0.1);
-  }
-}
-
 .header-content {
   max-width: 1280px;
   margin: 0 auto;
@@ -88,7 +60,6 @@
   gap: 1rem;
 }
 
-/* Título con imagen */
 .titulo {
   display: flex;
   align-items: center;
@@ -150,6 +121,7 @@
   width: 100%;
 }
 
+/* Tarjeta de login */
 .login-card {
   max-width: 28rem;
   width: 100%;
@@ -175,26 +147,12 @@
   box-shadow: var(--sombra-hover);
 }
 
-/* Mismo borde en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .login-card {
-    border: 1px solid rgba(229, 62, 62, 0.1);
-  }
-}
-
 .card-title {
   font-size: clamp(1.3rem, 5vw, 1.5rem);
   font-weight: 700;
   color: #2d3748;
   text-align: center;
   margin-bottom: 0.5rem;
-}
-
-/* Mismo color de título en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .card-title {
-    color: #2d3748;
-  }
 }
 
 .card-subtitle {
@@ -225,15 +183,6 @@
   75% { transform: translateX(5px); }
 }
 
-/* Mismo mensaje de error en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .error-message {
-    background: linear-gradient(135deg, #fff5f5, #fed7d7);
-    border: 1px solid #fc8181;
-    color: #c53030;
-  }
-}
-
 /* Formulario */
 .form-group {
   margin-bottom: 1.25rem;
@@ -246,13 +195,6 @@
   color: #2d3748;
   margin-bottom: 0.5rem;
   letter-spacing: 0.025em;
-}
-
-/* Mismo color de label en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .form-group label {
-    color: #2d3748;
-  }
 }
 
 .form-group input {
@@ -287,35 +229,7 @@
   opacity: 0.7;
 }
 
-/* Mismo estilo de inputs en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .form-group input {
-    background: #fafbfc;
-    border-color: #e2e8f0;
-    color: #1a202c;
-  }
-  
-  .form-group input::placeholder {
-    color: #a0aec0;
-  }
-  
-  .form-group input:hover {
-    border-color: #cbd5e0;
-  }
-  
-  .form-group input:focus {
-    background: white;
-    border-color: var(--rojo-principal);
-    box-shadow: 0 0 0 4px rgba(229, 62, 62, 0.1);
-  }
-  
-  .form-group input:disabled {
-    background-color: #f7fafc;
-    opacity: 0.7;
-  }
-}
-
-/* Botón */
+/* Botón de enviar */
 .btn-submit {
   width: 100%;
   background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
@@ -358,17 +272,6 @@
   transform: none;
 }
 
-/* Misma sombra en botón para modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .btn-submit {
-    box-shadow: 0 4px 6px -1px rgba(229, 62, 62, 0.3);
-  }
-  
-  .btn-submit:hover:not(:disabled) {
-    box-shadow: 0 10px 15px -3px rgba(229, 62, 62, 0.4);
-  }
-}
-
 /* Footer */
 .login-footer {
   background: linear-gradient(135deg, #1a202c, #2d3748);
@@ -404,20 +307,7 @@
   font-size: clamp(0.75rem, 3vw, 0.875rem);
 }
 
-/* Mismo footer en modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .login-footer {
-    background: linear-gradient(135deg, #1a202c, #2d3748);
-  }
-  
-  .footer-bottom {
-    color: #a0aec0;
-  }
-}
-
-/* ===== MEDIA QUERIES RESPONSIVOS ===== */
-
-/* Tablets y dispositivos medianos */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .header-content {
     padding: 0.875rem;
@@ -444,7 +334,6 @@
   }
 }
 
-/* Móviles grandes */
 @media (max-width: 640px) {
   .main-content {
     padding: 1rem;
@@ -474,7 +363,6 @@
   }
 }
 
-/* Móviles pequeños */
 @media (max-width: 480px) {
   .header-content {
     padding: 0.75rem;
@@ -530,7 +418,6 @@
   }
 }
 
-/* Móviles muy pequeños */
 @media (max-width: 360px) {
   .titulo img {
     max-height: 32px;
@@ -549,7 +436,7 @@
   }
 }
 
-/* Soporte para pantallas táctiles */
+/* Accesibilidad */
 @media (hover: none) {
   .login-card:hover {
     transform: none;
@@ -560,7 +447,6 @@
   }
 }
 
-/* Mejoras de accesibilidad */
 @media (prefers-reduced-motion: reduce) {
   .top-bar,
   .btn-submit::before,
@@ -576,7 +462,6 @@
   }
 }
 
-/* Orientación landscape en móviles */
 @media (max-width: 768px) and (orientation: landscape) {
   .login-header {
     position: relative;

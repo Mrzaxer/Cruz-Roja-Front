@@ -1,9 +1,16 @@
+/**
+ * @component AdminDashboard
+ * @description Panel principal del administrador. Muestra estadísticas del sistema:
+ *              total de sedes, usuarios, ambulancias, ambulancias activas y registros del día.
+ * @returns {JSX.Element}
+ */
+
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import AdminLayout from '../layout/AdminLayout'
+import '../../styles/AdminDashboard.css'
 
 export default function AdminDashboard() {
-
   const [stats, setStats] = useState({
     sedes: 0,
     usuarios: 0,
@@ -11,55 +18,71 @@ export default function AdminDashboard() {
     activas: 0,
     registrosHoy: 0
   })
-
   const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     cargarEstadisticas()
   }, [])
 
+  /**
+   * Carga todas las estadísticas en paralelo desde Supabase
+   * @returns {Promise<void>}
+   */
   const cargarEstadisticas = async () => {
+    try {
+      const hoy = new Date().toISOString().split('T')[0]
 
-    const hoy = new Date().toISOString().split('T')[0]
+      const [sedes, usuarios, ambulancias, activas, registros] = await Promise.all([
+        supabase.from('sedes').select('*', { count: 'exact', head: true }),
+        supabase.from('usuarios').select('*', { count: 'exact', head: true }),
+        supabase.from('ambulancias').select('*', { count: 'exact', head: true }),
+        supabase.from('ambulancias').select('*', { count: 'exact', head: true }).eq('estado', 'ACTIVA'),
+        supabase.from('registros').select('*', { count: 'exact', head: true }).gte('fecha', hoy)
+      ])
 
-    const [sedes, usuarios, ambulancias, activas, registros] = await Promise.all([
-      supabase.from('sedes').select('*', { count: 'exact', head: true }),
-      supabase.from('usuarios').select('*', { count: 'exact', head: true }),
-      supabase.from('ambulancias').select('*', { count: 'exact', head: true }),
-      supabase.from('ambulancias').select('*', { count: 'exact', head: true }).eq('estado', 'ACTIVA'),
-      supabase.from('registros').select('*', { count: 'exact', head: true }).gte('fecha', hoy)
-    ])
-
-    setStats({
-      sedes: sedes.count || 0,
-      usuarios: usuarios.count || 0,
-      ambulancias: ambulancias.count || 0,
-      activas: activas.count || 0,
-      registrosHoy: registros.count || 0
-    })
-
-    setCargando(false)
+      setStats({
+        sedes: sedes.count || 0,
+        usuarios: usuarios.count || 0,
+        ambulancias: ambulancias.count || 0,
+        activas: activas.count || 0,
+        registrosHoy: registros.count || 0
+      })
+    } catch (err) {
+      console.error('Error al cargar estadísticas:', err)
+      setError('Error al cargar los datos')
+    } finally {
+      setCargando(false)
+    }
   }
 
   if (cargando) {
     return (
       <AdminLayout titulo="Panel de Administración">
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-          <div style={{ fontSize: '3rem', animation: 'spin 1s linear infinite' }}>⟳</div>
+        <div className="loading-spinner">
+          <div className="spinner">⟳</div>
+        </div>
+      </AdminLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <AdminLayout titulo="Panel de Administración">
+        <div className="error-message">
+          <p>⚠️ {error}</p>
+          <button onClick={cargarEstadisticas}>Reintentar</button>
         </div>
       </AdminLayout>
     )
   }
 
   return (
-
     <AdminLayout
       titulo="Panel de Administración"
       subtitulo="Bienvenido al sistema de gestión"
     >
-
       <div className="stats-grid">
-
         <div className="stat-card red">
           <div className="stat-content">
             <div className="stat-info">
@@ -109,17 +132,7 @@ export default function AdminDashboard() {
             <div className="stat-icon purple">📋</div>
           </div>
         </div>
-
       </div>
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-
     </AdminLayout>
-
   )
 }

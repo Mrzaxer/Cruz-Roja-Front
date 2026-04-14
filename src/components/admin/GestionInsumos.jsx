@@ -1,28 +1,50 @@
+/**
+ * @component GestionInsumos
+ * @description Gestión completa del catálogo global de insumos médicos:
+ *              - Crear insumos con categorías y tipos (obligatorio/opcional)
+ *              - Editar insumos existentes
+ *              - Al crear un insumo, se asigna automáticamente cantidad 1 en todas las sedes
+ *              - Activar/desactivar insumos del catálogo
+ * @returns {JSX.Element}
+ */
+
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
 import AdminLayout from '../layout/AdminLayout'
 import '../../styles/GestionInsumos.css'
 
 export default function GestionInsumos() {
-
+  // ===== ESTADOS =====
   const [insumos, setInsumos] = useState([])
-  const [sedes, setSedes] = useState([]) // Agregar estado para sedes
+  const [sedes, setSedes] = useState([])
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [categoria, setCategoria] = useState('Manejo de Vía Aérea')
   const [obligatorioGlobal, setObligatorioGlobal] = useState(true)
   const [cargando, setCargando] = useState(false)
+  
+  // Estados para edición
+  const [editando, setEditando] = useState(false)
+  const [insumoEditandoId, setInsumoEditandoId] = useState(null)
+  const [modalEdicionAbierto, setModalEdicionAbierto] = useState(false)
 
+  // ===== CARGA INICIAL =====
   useEffect(() => {
     cargarInsumos()
-    cargarSedes() // Cargar sedes
+    cargarSedes()
   }, [])
 
+  /**
+   * Carga todas las sedes (para asignar insumos automáticamente)
+   */
   const cargarSedes = async () => {
     const { data } = await supabase.from('sedes').select('id')
     setSedes(data || [])
   }
 
+  /**
+   * Carga el catálogo de insumos ordenado por categoría y nombre
+   */
   const cargarInsumos = async () => {
     const { data } = await supabase
       .from('insumos')
@@ -33,8 +55,10 @@ export default function GestionInsumos() {
     setInsumos(data || [])
   }
 
+  /**
+   * Crea un nuevo insumo y lo asigna automáticamente a todas las sedes con cantidad 1
+   */
   const crearInsumo = async () => {
-
     if (!nombre) {
       alert('El nombre es obligatorio')
       return
@@ -42,7 +66,7 @@ export default function GestionInsumos() {
 
     setCargando(true)
 
-    // 1. Crear el insumo
+    // 1. Crear el insumo en catálogo global
     const { data: nuevoInsumo, error: errorInsumo } = await supabase
       .from('insumos')
       .insert([
@@ -59,7 +83,6 @@ export default function GestionInsumos() {
 
     if (errorInsumo) {
       alert('Error al crear insumo: ' + errorInsumo.message)
-      console.log(errorInsumo)
       setCargando(false)
       return
     }
@@ -79,23 +102,91 @@ export default function GestionInsumos() {
 
       if (errorConfig) {
         console.error('Error al crear configuraciones por sede:', errorConfig)
-        // No alertamos al usuario porque el insumo ya se creó
       }
     }
 
     alert('Insumo creado correctamente con cantidad 1 en todas las sedes')
 
-    setNombre('')
-    setDescripcion('')
-    setCategoria('Manejo de Vía Aérea')
-    setObligatorioGlobal(true)
-
+    // Limpiar formulario
+    limpiarFormulario()
     cargarInsumos()
     setCargando(false)
   }
 
-  const toggleActivo = async (id, estadoActual) => {
+  /**
+   * Abre el modal de edición con los datos del insumo
+   * @param {Object} insumo - Insumo a editar
+   */
+  const abrirModalEdicion = (insumo) => {
+    setEditando(true)
+    setInsumoEditandoId(insumo.id)
+    setNombre(insumo.nombre)
+    setDescripcion(insumo.descripcion || '')
+    setCategoria(insumo.categoria)
+    setObligatorioGlobal(insumo.obligatorio_global)
+    setModalEdicionAbierto(true)
+  }
 
+  /**
+   * Actualiza un insumo existente
+   */
+  const actualizarInsumo = async () => {
+    if (!nombre) {
+      alert('El nombre es obligatorio')
+      return
+    }
+
+    setCargando(true)
+
+    const { error } = await supabase
+      .from('insumos')
+      .update({
+        nombre,
+        descripcion,
+        categoria,
+        obligatorio_global: obligatorioGlobal
+      })
+      .eq('id', insumoEditandoId)
+
+    if (error) {
+      alert('Error al actualizar insumo: ' + error.message)
+      setCargando(false)
+      return
+    }
+
+    alert('Insumo actualizado correctamente')
+    cerrarModalEdicion()
+    limpiarFormulario()
+    cargarInsumos()
+    setCargando(false)
+  }
+
+  /**
+   * Cierra el modal de edición y limpia los estados
+   */
+  const cerrarModalEdicion = () => {
+    setModalEdicionAbierto(false)
+    setEditando(false)
+    setInsumoEditandoId(null)
+    limpiarFormulario()
+  }
+
+  /**
+   * Limpia el formulario de creación
+   */
+  const limpiarFormulario = () => {
+    setNombre('')
+    setDescripcion('')
+    setCategoria('Manejo de Vía Aérea')
+    setObligatorioGlobal(true)
+  }
+
+  /**
+   * Activa o desactiva un insumo del catálogo global
+   * @param {number} id - ID del insumo
+   * @param {boolean} estadoActual - Estado actual del insumo
+   */
+  const toggleActivo = async (id, estadoActual) => {
     await supabase
       .from('insumos')
       .update({ activo: !estadoActual })
@@ -104,6 +195,7 @@ export default function GestionInsumos() {
     cargarInsumos()
   }
 
+  // ===== RENDER =====
   return (
     <AdminLayout 
       titulo="Gestión de Insumos"
@@ -111,6 +203,7 @@ export default function GestionInsumos() {
     >
       <div className="insumos-container">
         
+        {/* BANNER */}
         <div className="insumos-banner">
           <div className="insumos-banner-icon">💉</div>
           <div className="insumos-banner-text">
@@ -121,6 +214,7 @@ export default function GestionInsumos() {
 
         <div className="insumos-grid">
           
+          {/* COLUMNA DE CREACIÓN */}
           <div className="insumos-card">
             <div className="insumos-card-header">
               <span>➕</span>
@@ -133,6 +227,7 @@ export default function GestionInsumos() {
                 <div className="form-group">
                   <label>Nombre del insumo *</label>
                   <input
+                    type="text"
                     placeholder="Ej: Guantes estériles"
                     value={nombre}
                     onChange={e => setNombre(e.target.value)}
@@ -142,6 +237,7 @@ export default function GestionInsumos() {
                 <div className="form-group">
                   <label>Descripción</label>
                   <input
+                    type="text"
                     placeholder="Descripción del insumo"
                     value={descripcion}
                     onChange={e => setDescripcion(e.target.value)}
@@ -150,10 +246,7 @@ export default function GestionInsumos() {
 
                 <div className="form-group">
                   <label>Categoría</label>
-                  <select
-                    value={categoria}
-                    onChange={e => setCategoria(e.target.value)}
-                  >
+                  <select value={categoria} onChange={e => setCategoria(e.target.value)}>
                     <option value="Manejo de Vía Aérea">Manejo de Vía Aérea</option>
                     <option value="Manejo Intravenoso e Intramuscular">Manejo Intravenoso e Intramuscular</option>
                     <option value="Soluciones">Soluciones</option>
@@ -179,21 +272,14 @@ export default function GestionInsumos() {
                   disabled={cargando}
                   className="btn-crear"
                 >
-                  {cargando ? (
-                    <>
-                      ⏳ Creando...
-                    </>
-                  ) : (
-                    <>
-                      ➕ Crear Insumo
-                    </>
-                  )}
+                  {cargando ? '⏳ Creando...' : '➕ Crear Insumo'}
                 </button>
 
               </div>
             </div>
           </div>
 
+          {/* COLUMNA DE LISTADO */}
           <div className="insumos-list-card">
             <div className="insumos-list-header">
               <span>📋</span>
@@ -213,10 +299,21 @@ export default function GestionInsumos() {
                     className={`insumo-item ${!insumo.activo ? 'inactivo' : ''}`}
                   >
                     <div className="insumo-header">
-                      <strong>{insumo.nombre}</strong>
-                      <span className={`insumo-badge ${insumo.obligatorio_global ? 'obligatorio' : 'opcional'}`}>
-                        {insumo.obligatorio_global ? '🔴 Obligatorio' : '⚪ Opcional'}
-                      </span>
+                      <div className="insumo-nombre">
+                        <strong>{insumo.nombre}</strong>
+                        <span className={`insumo-badge ${insumo.obligatorio_global ? 'obligatorio' : 'opcional'}`}>
+                          {insumo.obligatorio_global ? '🔴 Obligatorio' : '⚪ Opcional'}
+                        </span>
+                      </div>
+                      <div className="insumo-acciones-header">
+                        <button
+                          onClick={() => abrirModalEdicion(insumo)}
+                          className="btn-editar"
+                          title="Editar insumo"
+                        >
+                          Editar
+                        </button>
+                      </div>
                     </div>
 
                     {insumo.descripcion && (
@@ -226,18 +323,19 @@ export default function GestionInsumos() {
                     )}
 
                     <div className="insumo-detalles">
-                      <span>Categoría: {insumo.categoria}</span>
+                      <div className="insumo-detalle">
+                        📂 Categoría: <span>{insumo.categoria}</span>
+                      </div>
                     </div>
 
-                    <div className="insumo-acciones">
+                    <div className="insumo-acciones-footer">
                       <button
                         onClick={() => toggleActivo(insumo.id, insumo.activo)}
                         className={`btn-toggle ${!insumo.activo ? 'activar' : ''}`}
                       >
-                        {insumo.activo ? 'Desactivar' : 'Activar'}
+                        {insumo.activo ? '🔴 Desactivar' : '🟢 Activar'}
                       </button>
                     </div>
-
                   </div>
                 ))
               )}
@@ -245,8 +343,74 @@ export default function GestionInsumos() {
           </div>
 
         </div>
-
       </div>
+
+      {/* MODAL DE EDICIÓN */}
+      {modalEdicionAbierto && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Editar Insumo</h3>
+              <button className="modal-close" onClick={cerrarModalEdicion}>×</button>
+            </div>
+            
+            <form onSubmit={(e) => { e.preventDefault(); actualizarInsumo(); }}>
+              <div className="form-group">
+                <label>Nombre del insumo *</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Guantes estériles"
+                  value={nombre}
+                  onChange={e => setNombre(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Descripción</label>
+                <input
+                  type="text"
+                  placeholder="Descripción del insumo"
+                  value={descripcion}
+                  onChange={e => setDescripcion(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Categoría</label>
+                <select value={categoria} onChange={e => setCategoria(e.target.value)}>
+                  <option value="Manejo de Vía Aérea">Manejo de Vía Aérea</option>
+                  <option value="Manejo Intravenoso e Intramuscular">Manejo Intravenoso e Intramuscular</option>
+                  <option value="Soluciones">Soluciones</option>
+                  <option value="Curaciones y Varios">Curaciones y Varios</option>
+                  <option value="Limpieza y Desinfección">Limpieza y Desinfección</option>
+                  <option value="Medicamentos">Medicamentos</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Tipo</label>
+                <select
+                  value={obligatorioGlobal}
+                  onChange={e => setObligatorioGlobal(e.target.value === 'true')}
+                >
+                  <option value="true">🔴 Obligatorio en todas las sedes</option>
+                  <option value="false">⚪ Opcional por sede</option>
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={cerrarModalEdicion}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-save" disabled={cargando}>
+                  {cargando ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }

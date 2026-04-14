@@ -1,3 +1,13 @@
+/**
+ * @component SubadminDashboard
+ * @description Panel de control para subadministradores de sede.
+ *              - Muestra notificaciones y alertas importantes
+ *              - Actividad reciente de la sede
+ *              - Resumen de insumos pendientes, reportes, equipos y ambulancias
+ *              - Las fechas se manejan en GMT-6 (hora centro de México)
+ * @returns {JSX.Element}
+ */
+
 import { useEffect, useState } from "react"
 import { supabase } from "../../supabase"
 import { useAuth } from "../../context/AuthContext"
@@ -5,9 +15,11 @@ import { useNavigate } from "react-router-dom"
 import SubadminLayout from "../layout/SubadminLayout"
 import "../../styles/SubadminDashboard.css"
 
-
 export default function SubadminDashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  
+  // ===== ESTADOS =====
   const [ambulancias, setAmbulancias] = useState([])
   const [paramedicos, setParamedicos] = useState([])
   const [equipos, setEquipos] = useState([])
@@ -16,57 +28,57 @@ export default function SubadminDashboard() {
   const [notificaciones, setNotificaciones] = useState([])
   const [actividadesRecientes, setActividadesRecientes] = useState([])
 
-  const navigate = useNavigate()
-
-  // Función para formatear fecha a GMT-6 (hora centro de México)
+  /**
+   * Convierte una fecha ISO a GMT-6 (hora centro de México)
+   * @param {string} fechaISO - Fecha en formato ISO
+   * @returns {Date} Fecha en GMT-6
+   */
   const formatearFechaGMT6 = (fechaISO) => {
-    if (!fechaISO) return ''
+    if (!fechaISO) return null
     const fecha = new Date(fechaISO)
-    // Obtener la hora en GMT-6
     const offset = -6
     const utc = fecha.getTime() + (fecha.getTimezoneOffset() * 60000)
-    const fechaGMT6 = new Date(utc + (offset * 3600000))
-    return fechaGMT6
+    return new Date(utc + (offset * 3600000))
   }
 
-  // Función para obtener fecha actual en GMT-6 para comparaciones
+  /**
+   * Obtiene la fecha actual en GMT-6
+   * @returns {Date} Fecha actual en GMT-6
+   */
   const getFechaGMT6 = () => {
     const now = new Date()
     const offset = -6
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
-    const fechaGMT6 = new Date(utc + (offset * 3600000))
-    return fechaGMT6
+    return new Date(utc + (offset * 3600000))
   }
 
+  // ===== CARGA INICIAL =====
   useEffect(() => {
     if (user?.sede_id) {
       cargarDatos()
     }
   }, [user])
 
+  /**
+   * Carga todos los datos del dashboard
+   */
   const cargarDatos = async () => {
-    // Ambulancias de la sede
+    // 1. Ambulancias de la sede
     const { data: ambulanciasData } = await supabase
       .from("ambulancias")
       .select("*")
       .eq("sede_id", user.sede_id)
+    setAmbulancias(ambulanciasData || [])
 
-    if (ambulanciasData) {
-      setAmbulancias(ambulanciasData)
-    }
-
-    // Paramédicos de la sede
+    // 2. Paramédicos de la sede
     const { data: paramedicosData } = await supabase
       .from("usuarios")
       .select("*")
       .eq("sede_id", user.sede_id)
       .eq("rol", "PARAMEDICO")
+    setParamedicos(paramedicosData || [])
 
-    if (paramedicosData) {
-      setParamedicos(paramedicosData)
-    }
-
-    // Equipos de la sede (INDIVIDUAL)
+    // 3. Equipos de la sede (INDIVIDUAL)
     const { data: equiposData } = await supabase
       .from("equipos")
       .select(`
@@ -75,21 +87,17 @@ export default function SubadminDashboard() {
       `)
       .eq("sede_id", user.sede_id)
       .eq("tipo", "INDIVIDUAL")
+    setEquipos(equiposData || [])
 
-    if (equiposData) {
-      setEquipos(equiposData)
-    }
-
-    // Insumos sin configurar (cantidad 0)
+    // 4. Insumos sin configurar (cantidad 0)
     const { data: configurados } = await supabase
       .from("insumos_por_sede")
       .select("*")
       .eq("sede_id", user.sede_id)
       .eq("cantidad_establecida", 0)
-
     setInsumosPendientes(configurados?.length || 0)
 
-    // Reportes de equipo pendientes Y resueltos recientemente
+    // 5. Reportes de equipo
     const { data: reportes } = await supabase
       .from("reportes")
       .select(`
@@ -108,7 +116,7 @@ export default function SubadminDashboard() {
     ).length
     setReportesPendientes(pendientes)
 
-    // Actividades recientes de la sede (con fecha en GMT-6)
+    // 6. Actividades recientes
     const { data: registros } = await supabase
       .from("registros")
       .select("*, ambulancias(codigo), usuarios(nombre)")
@@ -122,15 +130,22 @@ export default function SubadminDashboard() {
         return {
           id: r.id,
           texto: `${r.usuarios?.nombre} realizó ${r.tipo} en ambulancia ${r.ambulancias?.codigo}`,
-          tiempo: fechaGMT6.toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })
+          tiempo: fechaGMT6?.toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }) || ''
         }
       })
     )
 
-    // Generar notificaciones incluyendo reportes resueltos
+    // 7. Generar notificaciones
     generarNotificaciones(ambulanciasData, equiposData, configurados, reportes)
   }
 
+  /**
+   * Genera notificaciones basadas en el estado actual
+   * @param {Array} ambulanciasData - Lista de ambulancias
+   * @param {Array} equiposData - Lista de equipos
+   * @param {Array} insumosConfig - Configuración de insumos
+   * @param {Array} reportesData - Lista de reportes
+   */
   const generarNotificaciones = (ambulanciasData, equiposData, insumosConfig, reportesData) => {
     const notificacionesList = []
     const ahoraGMT6 = getFechaGMT6()
@@ -162,11 +177,11 @@ export default function SubadminDashboard() {
       })
     }
 
-    // 3. Reportes resueltos recientemente (últimas 24 horas en GMT-6)
+    // 3. Reportes resueltos recientemente (últimas 24 horas)
     const reportesResueltos = (reportesData || []).filter(r => {
       if (r.estado !== "RESUELTO") return false
       const fechaResolucion = formatearFechaGMT6(r.fecha_resolucion)
-      return fechaResolucion > hace24Horas
+      return fechaResolucion && fechaResolucion > hace24Horas
     })
 
     reportesResueltos.forEach(reporte => {
@@ -176,9 +191,9 @@ export default function SubadminDashboard() {
         tipo: "success",
         icono: "✅",
         titulo: "Reporte resuelto",
-        mensaje: `El reporte de ${reporte.equipo?.modelo?.nombre || reporte.equipo?.nombre || 'equipo'} (N° ${reporte.equipo?.numero_serie || 'general'}) fue resuelto. ${reporte.comentario_admin ? `Comentario: ${reporte.comentario_admin}` : ''}`,
+        mensaje: `El reporte de ${reporte.equipo?.modelo?.nombre || reporte.equipo?.nombre || 'equipo'} fue resuelto.`,
         accion: () => navigate("/subadmin/equipo"),
-        fecha: fechaResolucion.toISOString(),
+        fecha: fechaResolucion?.toISOString() || ahoraGMT6.toISOString(),
         leida: false
       })
     })
@@ -251,6 +266,11 @@ export default function SubadminDashboard() {
     setNotificaciones(notificacionesList)
   }
 
+  /**
+   * Obtiene los colores según el tipo de notificación
+   * @param {string} tipo - Tipo de notificación (danger, warning, info, success)
+   * @returns {Object} Estilos CSS
+   */
   const getTipoColor = (tipo) => {
     switch(tipo) {
       case "danger": return { bg: "#fee2e2", border: "#991b1b", icon: "#b22222" }
@@ -261,9 +281,16 @@ export default function SubadminDashboard() {
     }
   }
 
-  // Función para formatear fecha de notificación
+  /**
+   * Formatea la fecha de una notificación para mostrar tiempo relativo
+   * @param {string} fechaISO - Fecha en formato ISO
+   * @returns {string} Tiempo relativo formateado
+   */
   const formatearFechaNotificacion = (fechaISO) => {
+    if (!fechaISO) return ''
     const fecha = formatearFechaGMT6(fechaISO)
+    if (!fecha) return ''
+    
     const ahora = getFechaGMT6()
     const diffHoras = Math.floor((ahora - fecha) / (1000 * 60 * 60))
     
@@ -284,6 +311,7 @@ export default function SubadminDashboard() {
     }
   }
 
+  // ===== RENDER =====
   return (
     <SubadminLayout 
       titulo="Panel de Control" 
@@ -300,7 +328,7 @@ export default function SubadminDashboard() {
           </div>
         </div>
 
-        {/* Notificaciones - Principal */}
+        {/* Notificaciones principales */}
         <div className="notificaciones-principal">
           <h3 className="notificaciones-titulo">
             <span>🔔</span>

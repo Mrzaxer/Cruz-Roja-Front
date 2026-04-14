@@ -1,14 +1,28 @@
+/**
+ * @component SubadminParamedicos
+ * @description CRUD completo para la gestión de paramédicos por sede (subadministrador).
+ *              - Listado de paramédicos de la sede del subadmin
+ *              - Crear nuevos paramédicos (asignados automáticamente a su sede)
+ *              - Editar paramédicos existentes
+ *              - Activar/desactivar paramédicos
+ *              - Gestión de contraseñas (opcional en edición)
+ * @returns {JSX.Element}
+ */
+
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { useAuth } from '../../context/AuthContext'
 import SubadminLayout from '../layout/SubadminLayout'
 
 export default function SubadminParamedicos() {
+  // ===== ESTADOS =====
   const { user } = useAuth()
   const [paramedicos, setParamedicos] = useState([])
   const [cargando, setCargando] = useState(true)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [paramedicoEditando, setParamedicoEditando] = useState(null)
+  
+  // Formulario
   const [formData, setFormData] = useState({
     nombre: '',
     correo: '',
@@ -16,10 +30,14 @@ export default function SubadminParamedicos() {
     activo: true
   })
 
+  // ===== CARGA INICIAL =====
   useEffect(() => {
     if (user?.sede_id) cargarParamedicos()
   }, [user])
 
+  /**
+   * Carga los paramédicos de la sede del subadministrador
+   */
   const cargarParamedicos = async () => {
     const { data } = await supabase
       .from('usuarios')
@@ -32,6 +50,10 @@ export default function SubadminParamedicos() {
     setCargando(false)
   }
 
+  /**
+   * Guarda o actualiza un paramédico
+   * @param {Event} e - Evento del formulario
+   */
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -52,12 +74,14 @@ export default function SubadminParamedicos() {
         }])
     }
     
-    setModalAbierto(false)
-    setParamedicoEditando(null)
-    setFormData({ nombre: '', correo: '', password: '', activo: true })
+    cerrarModal()
     cargarParamedicos()
   }
 
+  /**
+   * Abre el modal para editar un paramédico
+   * @param {Object} paramedico - Datos del paramédico a editar
+   */
   const handleEditar = (paramedico) => {
     setParamedicoEditando(paramedico)
     setFormData({
@@ -69,6 +93,11 @@ export default function SubadminParamedicos() {
     setModalAbierto(true)
   }
 
+  /**
+   * Activa o desactiva un paramédico
+   * @param {number} id - ID del paramédico
+   * @param {boolean} estadoActual - Estado actual del paramédico
+   */
   const toggleActivo = async (id, estadoActual) => {
     await supabase
       .from('usuarios')
@@ -77,6 +106,38 @@ export default function SubadminParamedicos() {
     cargarParamedicos()
   }
 
+  /**
+   * Abre el modal para crear un nuevo paramédico
+   */
+  const abrirModalNuevo = () => {
+    setParamedicoEditando(null)
+    setFormData({ nombre: '', correo: '', password: '', activo: true })
+    setModalAbierto(true)
+  }
+
+  /**
+   * Cierra el modal y limpia los estados
+   */
+  const cerrarModal = () => {
+    setModalAbierto(false)
+    setParamedicoEditando(null)
+    setFormData({ nombre: '', correo: '', password: '', activo: true })
+  }
+
+  /**
+   * Obtiene los estilos visuales según el estado del paramédico
+   * @param {boolean} activo - Estado del paramédico
+   * @returns {Object} Estilos CSS y texto
+   */
+  const getEstadoStyle = (activo) => {
+    return {
+      bg: activo ? '#dcfce7' : '#fee2e2',
+      color: activo ? '#166534' : '#991b1b',
+      text: activo ? 'Activo' : 'Inactivo'
+    }
+  }
+
+  // ===== RENDER =====
   if (cargando) {
     return (
       <SubadminLayout titulo="Gestión de Paramédicos">
@@ -98,20 +159,13 @@ export default function SubadminParamedicos() {
       <div className="crud-container">
         <div className="crud-header">
           <h3>Lista de Paramédicos</h3>
-          <button 
-            className="btn-primary"
-            onClick={() => {
-              setParamedicoEditando(null)
-              setFormData({ nombre: '', correo: '', password: '', activo: true })
-              setModalAbierto(true)
-            }}
-          >
+          <button className="btn-primary" onClick={abrirModalNuevo}>
             <span>+</span> Nuevo Paramédico
           </button>
         </div>
 
         <div className="table-responsive">
-          <table>
+          <table className="data-table">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -121,78 +175,97 @@ export default function SubadminParamedicos() {
               </tr>
             </thead>
             <tbody>
-              {paramedicos.map(p => (
-                <tr key={p.id}>
-                  <td><strong>{p.nombre}</strong></td>
-                  <td>{p.correo}</td>
-                  <td>
-                    <span style={{
-                      backgroundColor: p.activo ? '#dcfce7' : '#fee2e2',
-                      color: p.activo ? '#166534' : '#991b1b',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '20px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600'
-                    }}>
-                      {p.activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td>
-                    <button 
-                      className="btn-edit"
-                      onClick={() => handleEditar(p)}
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button 
-                      className="btn-toggle"
-                      onClick={() => toggleActivo(p.id, p.activo)}
-                    >
-                      {p.activo ? 'Desactivar' : 'Activar'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {paramedicos.map(p => {
+                const estadoStyle = getEstadoStyle(p.activo)
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <strong>{p.nombre}</strong>
+                    </td>
+                    <td>{p.correo}</td>
+                    <td>
+                      <span className="estado-badge" style={{
+                        backgroundColor: estadoStyle.bg,
+                        color: estadoStyle.color
+                      }}>
+                        {estadoStyle.text}
+                      </span>
+                    </td>
+                    <td className="acciones">
+                      <button 
+                        className="btn-edit"
+                        onClick={() => handleEditar(p)}
+                      >
+                        ✏️ Editar
+                      </button>
+                      
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>{paramedicoEditando ? 'Editar Paramédico' : 'Nuevo Paramédico'}</h3>
+            <div className="modal-header">
+              <span>{paramedicoEditando ? '' : ''}</span>
+              <h3>{paramedicoEditando ? 'Editar Paramédico' : 'Nuevo Paramédico'}</h3>
+              <button className="modal-close" onClick={cerrarModal}>×</button>
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Nombre completo</label>
+                <label>Nombre completo *</label>
                 <input
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                  placeholder="Ej: Juan Pérez García"
                   required
                 />
               </div>
+              
               <div className="form-group">
-                <label>Correo electrónico</label>
+                <label>Correo electrónico *</label>
                 <input
                   type="email"
                   value={formData.correo}
                   onChange={(e) => setFormData({...formData, correo: e.target.value})}
+                  placeholder="Ej: juan.perez@cruzroja.mx"
                   required
                 />
               </div>
+              
               <div className="form-group">
-                <label>Contraseña {paramedicoEditando && '(dejar vacío para no cambiar)'}</label>
+                <label>
+                  Contraseña {paramedicoEditando && '(dejar vacío para no cambiar)'}
+                </label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                   required={!paramedicoEditando}
+                  placeholder={paramedicoEditando ? '••••••••' : 'Ingrese contraseña'}
                 />
               </div>
+              
+              <div className="form-group">
+                <label>Estado</label>
+                <select
+                  value={formData.activo}
+                  onChange={(e) => setFormData({...formData, activo: e.target.value === 'true'})}
+                >
+                  <option value="true">✅ Activo</option>
+                  <option value="false">❌ Inactivo</option>
+                </select>
+              </div>
+              
               <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setModalAbierto(false)}>
+                <button type="button" className="btn-cancel" onClick={cerrarModal}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-save">

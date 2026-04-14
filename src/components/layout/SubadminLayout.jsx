@@ -1,7 +1,17 @@
+/**
+ * @component SubadminLayout
+ * @description Layout principal para el panel de subadministrador.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Contenido de la página
+ * @param {string} props.titulo - Título de la página
+ * @param {string} [props.subtitulo] - Subtítulo opcional
+ * @returns {JSX.Element}
+ */
+
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import '../../styles/SubadminLayout.css'
-import firmaInst from '../../assets/imagenes/firmainst.png' // ← Cambiado a firmainst.png
+import firmaInst from '../../assets/imagenes/firmainst.png'
 
 export default function SubadminLayout({ children, titulo, subtitulo }) {
   const { user, logout } = useAuth()
@@ -23,23 +33,16 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
     { nombre: 'Reportes', icono: '📈', path: '/subadmin/reportes' },
   ]
 
-  // Obtener nombre de la sede
   const nombreSede = user?.sedes?.nombre || 'Sede no asignada'
 
   return (
     <div className="subadmin-layout-container">
-      {/* Barra superior roja */}
       <div className="subadmin-top-bar"></div>
 
-      {/* Header */}
       <header className="subadmin-header">
         <div className="subadmin-header-content">
           <div className="subadmin-header-top">
-            {/* Logo y título - SOLO LA IMAGEN firmainst.png */}
             <div className="subadmin-logo-area">
-              <div className="subadmin-logo" style={{ display: 'none' }}> {/* Oculto */}
-                <img src={firmaInst} alt="Logo Cruz Roja" />
-              </div>
               <div className="subadmin-logo-text">
                 <img 
                   src={firmaInst} 
@@ -47,12 +50,9 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
                   className="subadmin-firma-img"
                   loading="lazy"
                 />
-                <h1 style={{ display: 'none' }}>CRUZ ROJA MEXICANA</h1>
-                <p style={{ display: 'none' }}>Subadministrador</p>
               </div>
             </div>
 
-            {/* Área de usuario */}
             <div className="subadmin-user-area">
               <div className="subadmin-user-info">
                 <p className="subadmin-user-name">{user?.nombre || 'Subadministrador'}</p>
@@ -65,7 +65,6 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
             </div>
           </div>
 
-          {/* Navegación */}
           <nav className="subadmin-nav">
             {menu.map((item) => (
               <a
@@ -85,7 +84,6 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
         </div>
       </header>
 
-      {/* Título de página */}
       <div className="subadmin-page-title">
         <div className="subadmin-title-content">
           <h2>{titulo}</h2>
@@ -93,7 +91,6 @@ export default function SubadminLayout({ children, titulo, subtitulo }) {
         </div>
       </div>
 
-      {/* Contenido principal */}
       <main className="subadmin-main">
         {children}
       </main>

@@ -1,4 +1,4 @@
-/* ===== ADMIN LAYOUT - ESTILOS COMPLETOS ===== */
+
 :root {
   --rojo-principal: #b22222;
   --rojo-oscuro: #8b0000;
@@ -125,7 +125,7 @@ body {
   font-size: 0.875rem;
   color: var(--gris-500);
   font-weight: 500;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
 }
@@ -391,7 +391,7 @@ th {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--gris-600);
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.05em;
 }
 

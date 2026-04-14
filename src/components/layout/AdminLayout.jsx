@@ -1,7 +1,12 @@
+/**
+ * @component AdminLayout
+ * @description Layout principal para el panel de administración.
+ */
+
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import '../../styles/AdminLayout.css'
-import firmaInst from '../../assets/imagenes/firmainst.png' // ← Cambiado a firmainst.png
+import firmaInst from '../../assets/imagenes/firmainst.png'
 
 export default function AdminLayout({ children, titulo, subtitulo }) {
   const { user, logout } = useAuth()
@@ -26,18 +31,12 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
 
   return (
     <div className="admin-layout-container">
-      {/* Barra superior roja */}
       <div className="admin-top-bar"></div>
 
-      {/* Header */}
       <header className="admin-header">
         <div className="admin-header-content">
           <div className="admin-header-top">
-            {/* Logo y título - SOLO LA IMAGEN firmainst.png */}
             <div className="admin-logo-area">
-              <div className="admin-logo" style={{ display: 'none' }}> {/* Oculto */}
-                <img src={firmaInst} alt="Logo Cruz Roja" />
-              </div>
               <div className="admin-logo-text">
                 <img 
                   src={firmaInst} 
@@ -45,12 +44,9 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
                   className="admin-firma-img"
                   loading="lazy"
                 />
-                <h1 style={{ display: 'none' }}>CRUZ ROJA MEXICANA</h1>
-                <p style={{ display: 'none' }}>Jalisco</p>
               </div>
             </div>
 
-            {/* Área de usuario */}
             <div className="admin-user-area">
               <div className="admin-user-info">
                 <p className="admin-user-name">{user?.nombre || 'Administrador'}</p>
@@ -63,7 +59,6 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
             </div>
           </div>
 
-          {/* Navegación */}
           <nav className="admin-nav">
             {menu.map((item) => (
               <a
@@ -83,7 +78,6 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
         </div>
       </header>
 
-      {/* Título de página */}
       <div className="admin-page-title">
         <div className="admin-title-content">
           <h2>{titulo}</h2>
@@ -91,7 +85,6 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
         </div>
       </div>
 
-      {/* Contenido principal */}
       <main className="admin-main">
         {children}
       </main>

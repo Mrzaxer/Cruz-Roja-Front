@@ -382,13 +382,13 @@ export default function Equipo() {
             className={`tab-button ${tipoVista === "individual" ? "active" : ""}`}
             onClick={() => setTipoVista("individual")}
           >
-            <span></span> Equipos Individuales ({equiposIndividuales.length})
+            Equipos Individuales ({equiposIndividuales.length})
           </button>
           <button
             className={`tab-button ${tipoVista === "general" ? "active" : ""}`}
             onClick={() => setTipoVista("general")}
           >
-            <span></span> Equipos Generales ({equiposGenerales.length})
+            Equipos Generales ({equiposGenerales.length})
           </button>
         </div>
 
@@ -434,11 +434,10 @@ export default function Equipo() {
             <div className="equipo-section">
               <div className="section-header">
                 <div className="section-header-left">
-                  <span></span>
                   <h3>Modelos de Equipo ({modelos.length})</h3>
                 </div>
                 <button className="btn-primary-small" onClick={() => setModalModelo(true)}>
-                  <span>➕</span> Nuevo Modelo
+                  ➕ Nuevo Modelo
                 </button>
               </div>
               <div className="modelos-grid">
@@ -479,7 +478,6 @@ export default function Equipo() {
             <div className="equipo-section">
               <div className="section-header">
                 <div className="section-header-left">
-                  <span></span>
                   <h3>Equipos Individuales ({equiposFiltrados.length})</h3>
                 </div>
                 <button className="btn-primary-small" onClick={() => {
@@ -492,7 +490,7 @@ export default function Equipo() {
                   })
                   setModalEquipoIndividual(true)
                 }}>
-                  <span>➕</span> Nuevo Equipo Individual
+                  ➕ Nuevo Equipo Individual
                 </button>
               </div>
               
@@ -500,10 +498,9 @@ export default function Equipo() {
                 {equiposFiltrados.length === 0 ? (
                   <>
                     <div className="empty-state">
-                      <span className="empty-icon"></span>
+                      <span className="empty-icon">📦</span>
                       <p>No hay equipos individuales registrados</p>
                     </div>
-                    {/* Tarjeta para agregar cuando está vacío */}
                     <div 
                       className="inventario-card agregar-card agregar-card-vacio"
                       onClick={() => {
@@ -544,7 +541,7 @@ export default function Equipo() {
                           </div>
                           
                           <div className="inventario-serie">
-                            <span className="serie-label"> N° Serie:</span>
+                            <span className="serie-label">🔢 N° Serie:</span>
                             <span className="serie-valor">{equipo.numero_serie}</span>
                           </div>
                           <div className="inventario-sede">
@@ -578,7 +575,6 @@ export default function Equipo() {
                         </div>
                       )
                     })}
-                    {/* Tarjeta para agregar nuevo equipo individual al final */}
                     <div 
                       className="inventario-card agregar-card"
                       onClick={() => {
@@ -609,7 +605,6 @@ export default function Equipo() {
           <div className="equipo-section">
             <div className="section-header">
               <div className="section-header-left">
-                <span></span>
                 <h3>Equipos Generales ({equiposFiltrados.length})</h3>
               </div>
               <button className="btn-primary-small" onClick={() => {
@@ -623,7 +618,7 @@ export default function Equipo() {
                 })
                 setModalEquipoGeneral(true)
               }}>
-                <span>➕</span> Nuevo Equipo General
+                ➕ Nuevo Equipo General
               </button>
             </div>
             
@@ -634,7 +629,6 @@ export default function Equipo() {
                     <span className="empty-icon">📦</span>
                     <p>No hay equipos generales registrados</p>
                   </div>
-                  {/* Tarjeta para agregar cuando está vacío */}
                   <div 
                     className="inventario-card agregar-card agregar-card-vacio"
                     onClick={() => {
@@ -710,7 +704,6 @@ export default function Equipo() {
                       </div>
                     )
                   })}
-                  {/* Tarjeta para agregar nuevo equipo general al final */}
                   <div 
                     className="inventario-card agregar-card"
                     onClick={() => {
@@ -795,7 +788,7 @@ export default function Equipo() {
       {modalEquipoIndividual && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>{equipoEditando ? "✏️ Editar Equipo Individual" : " Nuevo Equipo Individual"}</h3>
+            <h3>{equipoEditando ? "✏️ Editar Equipo Individual" : "➕ Nuevo Equipo Individual"}</h3>
             <form onSubmit={equipoEditando ? editarEquipo : crearEquipoIndividual}>
               <div className="form-group">
                 <label>Modelo *</label>
@@ -872,7 +865,7 @@ export default function Equipo() {
       {modalEquipoGeneral && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>{equipoEditando ? "✏️ Editar Equipo General" : " Nuevo Equipo General"}</h3>
+            <h3>{equipoEditando ? "✏️ Editar Equipo General" : "➕ Nuevo Equipo General"}</h3>
             <form onSubmit={equipoEditando ? editarEquipo : crearEquipoGeneral}>
               <div className="form-group">
                 <label>Nombre del equipo *</label>

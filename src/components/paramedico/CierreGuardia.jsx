@@ -1,3 +1,14 @@
+/**
+ * @component CierreGuardia
+ * @description Formulario de cierre de guardia para paramédicos:
+ *              - Registro de cantidades reales de insumos por categoría
+ *              - Validación de cantidades establecidas por sede
+ *              - Navegación por categorías
+ *              - Observaciones finales
+ *              - Guardado en Supabase con fecha en GMT-6 (hora centro de México)
+ * @returns {JSX.Element}
+ */
+
 import { useEffect, useState } from 'react'
 import { useLocation, Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase'
@@ -6,13 +17,13 @@ import ParamedicoLayout from '../layout/ParamedicoLayout'
 import '../../styles/CierreGuardia.css'
 
 export default function CierreGuardia() {
-
   const { user } = useAuth()
   const { state } = useLocation()
   const navigate = useNavigate()
 
   const ambulancia = state?.ambulancia
 
+  // ===== CATEGORÍAS =====
   const categorias = [
     "Manejo de Vía Aérea",
     "Manejo Intravenoso e Intramuscular",
@@ -22,6 +33,7 @@ export default function CierreGuardia() {
     "Medicamentos"
   ]
 
+  // ===== ESTADOS =====
   const [categoriaIndex, setCategoriaIndex] = useState(0)
   const [insumos, setInsumos] = useState([])
   const [cantidades, setCantidades] = useState({})
@@ -32,42 +44,43 @@ export default function CierreGuardia() {
   const categoriaActual = categorias[categoriaIndex]
   const esUltimaCategoria = categoriaIndex === categorias.length - 1
 
-  // Función para obtener la fecha actual en GMT-6 (hora centro de México)
+  // Redirigir si no hay ambulancia seleccionada
+  if (!ambulancia) {
+    return <Navigate to="/paramedico" />
+  }
+
+  /**
+   * Obtiene la fecha actual en GMT-6 (hora centro de México)
+   * @returns {string} Fecha en formato ISO con ajuste GMT-6
+   */
   const getFechaGMT6 = () => {
     const now = new Date()
-    // Obtener la hora en GMT-6
     const offset = -6
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
     const fechaGMT6 = new Date(utc + (offset * 3600000))
     return fechaGMT6.toISOString()
   }
 
-  if (!ambulancia) {
-    return <Navigate to="/paramedico" />
-  }
-
+  // ===== CARGA DE INSUMOS POR CATEGORÍA =====
   useEffect(() => {
     cargarInsumos()
   }, [categoriaIndex])
 
+  /**
+   * Carga los insumos de la categoría actual con su configuración por sede
+   */
   const cargarInsumos = async () => {
     setCargando(true)
 
     const sedeId = ambulancia?.sede_id
 
     // 1. Obtener TODOS los insumos de la categoría actual
-    const { data: insumosGlobales, error: errorInsumos } = await supabase
+    const { data: insumosGlobales } = await supabase
       .from('insumos')
       .select('id, nombre, descripcion, obligatorio_global')
       .eq('categoria', categoriaActual)
       .eq('activo', true)
       .order('nombre')
-
-    if (errorInsumos) {
-      console.error('Error cargando insumos:', errorInsumos)
-      setCargando(false)
-      return
-    }
 
     if (!insumosGlobales || insumosGlobales.length === 0) {
       setInsumos([])
@@ -77,50 +90,36 @@ export default function CierreGuardia() {
 
     // 2. Obtener las configuraciones de la sede para estos insumos
     const insumoIds = insumosGlobales.map(i => i.id)
-    const { data: configsSede, error: errorConfig } = await supabase
+    const { data: configsSede } = await supabase
       .from('insumos_por_sede')
       .select('insumo_id, cantidad_establecida, activo_en_sede')
       .eq('sede_id', sedeId)
       .in('insumo_id', insumoIds)
 
-    if (errorConfig) {
-      console.error('Error cargando configuraciones:', errorConfig)
-    }
-
-    // 3. Crear mapa de configuraciones
     const configMap = new Map()
     configsSede?.forEach(config => {
       configMap.set(config.insumo_id, config)
     })
 
-    // 4. Filtrar insumos según la lógica correcta
+    // 3. Filtrar insumos según la lógica correcta
     const filtrados = insumosGlobales
       .map(insumo => {
         const config = configMap.get(insumo.id)
         
-        // Determinar si está activo en esta sede
         let activoEnSede = true
         let cantidadEstablecida = 1
         
         if (config) {
-          // Si tiene configuración, usar sus valores
           activoEnSede = config.activo_en_sede !== false
           cantidadEstablecida = config.cantidad_establecida ?? 1
         } else {
-          // Si NO tiene configuración:
-          // - Si es obligatorio global, aparece con cantidad 1
-          // - Si no es obligatorio, NO aparece (solo si el subadmin lo configuró)
           if (!insumo.obligatorio_global) {
-            return null  // No aparece porque el subadmin no lo ha configurado
+            return null
           }
-          // Si es obligatorio global, aparece con cantidad 1
           cantidadEstablecida = 1
         }
         
-        // Si está inactivo, no aparece
         if (!activoEnSede) return null
-        
-        // Asegurar cantidad mínima 1
         if (cantidadEstablecida < 1) cantidadEstablecida = 1
         
         return {
@@ -134,6 +133,11 @@ export default function CierreGuardia() {
     setCargando(false)
   }
 
+  /**
+   * Cambia la cantidad registrada de un insumo
+   * @param {number} id - ID del insumo
+   * @param {string} valor - Valor ingresado
+   */
   const cambiarCantidad = (id, valor) => {
     setCantidades(prev => ({
       ...prev,
@@ -141,6 +145,11 @@ export default function CierreGuardia() {
     }))
   }
 
+  /**
+   * Obtiene el estado de un insumo (completo, faltante, excedente, pendiente)
+   * @param {Object} insumo - Objeto del insumo
+   * @returns {string} Estado del insumo
+   */
   const obtenerEstadoInsumo = (insumo) => {
     const cantidad = cantidades[insumo.id]
     const establecida = insumo.cantidad_establecida ?? 0
@@ -151,6 +160,10 @@ export default function CierreGuardia() {
     return 'completo'
   }
 
+  /**
+   * Verifica si la categoría actual está completa
+   * @returns {boolean} True si todos los insumos tienen cantidad registrada
+   */
   const categoriaCompleta = () => {
     if (insumos.length === 0) return true
     return insumos.every(insumo =>
@@ -159,6 +172,9 @@ export default function CierreGuardia() {
     )
   }
 
+  /**
+   * Avanza a la siguiente categoría
+   */
   const siguienteCategoria = () => {
     if (!categoriaCompleta()) {
       alert("Debes ingresar cantidad en todos los insumos de esta categoría")
@@ -170,11 +186,14 @@ export default function CierreGuardia() {
     }
   }
 
+  /**
+   * Recolecta todos los insumos de todas las categorías para guardar
+   * @returns {Array} Lista de todos los insumos con cantidades establecidas
+   */
   const recolectarTodosLosInsumos = async () => {
     let todosLosInsumos = []
     
     for (const cat of categorias) {
-      // Obtener insumos de la categoría
       const { data: insumosGlobales } = await supabase
         .from('insumos')
         .select('id, nombre, descripcion, obligatorio_global')
@@ -185,7 +204,6 @@ export default function CierreGuardia() {
 
       const insumoIds = insumosGlobales.map(i => i.id)
       
-      // Obtener configuraciones
       const { data: configsSede } = await supabase
         .from('insumos_por_sede')
         .select('insumo_id, cantidad_establecida, activo_en_sede')
@@ -230,6 +248,9 @@ export default function CierreGuardia() {
     return todosLosInsumos
   }
 
+  /**
+   * Finaliza el cierre de guardia y guarda todos los datos
+   */
   const finalizarCierre = async () => {
     if (!categoriaCompleta()) {
       alert("Debes completar todos los insumos de esta categoría")
@@ -241,13 +262,10 @@ export default function CierreGuardia() {
     try {
       const todosLosInsumos = await recolectarTodosLosInsumos()
       
-      console.log('Total insumos a guardar:', todosLosInsumos.length)
-
-      // Obtener la fecha actual en GMT-6
+      // Obtener fecha actual en GMT-6
       const fechaGMT6 = getFechaGMT6()
-      console.log('Fecha en GMT-6:', fechaGMT6)
 
-      // Crear el registro principal de cierre con fecha en GMT-6
+      // Crear el registro principal de cierre
       const { data: registro, error: errorRegistro } = await supabase
         .from('registros')
         .insert({
@@ -256,14 +274,14 @@ export default function CierreGuardia() {
           paramedico_id: user.id,
           tipo: 'CIERRE',
           observaciones: observacionesFinales,
-          fecha: fechaGMT6  // ← Fecha ajustada a GMT-6
+          fecha: fechaGMT6
         })
         .select()
         .single()
 
       if (errorRegistro) throw errorRegistro
 
-      // Guardar los detalles de TODOS los insumos con cantidad_establecida
+      // Guardar los detalles de TODOS los insumos
       const detalles = todosLosInsumos.map(insumo => ({
         registro_id: registro.id,
         insumo_id: insumo.id,
@@ -271,8 +289,6 @@ export default function CierreGuardia() {
         cantidad_establecida: insumo.cantidad_establecida,
         comentario: ''
       }))
-
-      console.log('Guardando detalles:', detalles)
 
       const { error: errorDetalles } = await supabase
         .from('detalle_insumos')
@@ -320,6 +336,7 @@ export default function CierreGuardia() {
     }
   }
 
+  // ===== RENDER =====
   if (cargando) {
     return (
       <ParamedicoLayout titulo="Cierre de Guardia">
@@ -336,6 +353,8 @@ export default function CierreGuardia() {
   return (
     <ParamedicoLayout titulo="Cierre de Guardia">
       <div className="cierre-container">
+        
+        {/* BANNER DE AMBULANCIA */}
         <div className="cierre-banner">
           <div className="cierre-banner-icono">📋</div>
           <div className="cierre-banner-info">
@@ -349,6 +368,7 @@ export default function CierreGuardia() {
           )}
         </div>
 
+        {/* TARJETA DE CATEGORÍA */}
         <div className="categoria-card">
           <h3>{categoriaActual}</h3>
 
@@ -408,15 +428,17 @@ export default function CierreGuardia() {
             </>
           )}
 
+          {/* ÚLTIMA CATEGORÍA - OBSERVACIONES Y FINALIZAR */}
           {esUltimaCategoria && (
             <>
               {insumos.length > 0 && (
                 <div className="observaciones-finales">
-                  <h4>Observaciones finales (opcional)</h4>
+                  <h4>📝 Observaciones finales (opcional)</h4>
                   <textarea
                     placeholder="Escribe observaciones generales del turno..."
                     value={observacionesFinales}
                     onChange={(e) => setObservacionesFinales(e.target.value)}
+                    rows={3}
                   />
                 </div>
               )}
@@ -427,7 +449,7 @@ export default function CierreGuardia() {
                   disabled={!categoriaCompleta() || guardando}
                   className="btn-finalizar"
                 >
-                  {guardando ? 'Guardando...' : '✅ Finalizar Cierre'}
+                  {guardando ? '⏳ Guardando...' : '✅ Finalizar Cierre'}
                 </button>
               </div>
             </>
