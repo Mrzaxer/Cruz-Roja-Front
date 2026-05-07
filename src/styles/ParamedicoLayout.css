@@ -1,0 +1,253 @@
+/* ===== PARAMEDICO LAYOUT ===== */
+
+:root {
+  --rojo-principal: #e53e3e;
+  --rojo-oscuro: #c53030;
+  --gris-fondo: #f7fafc;
+  --gris-texto: #4a5568;
+  --gris-claro: #718096;
+  --blanco: #ffffff;
+  --sombra: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--gris-fondo);
+}
+
+.paramedico-layout-container {
+  min-height: 100vh;
+  background-color: var(--gris-fondo);
+  width: 100%;
+}
+
+/* Barra superior */
+.paramedico-top-bar {
+  background: linear-gradient(90deg, var(--rojo-principal), var(--rojo-oscuro));
+  height: 4px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+}
+
+/* Header */
+.paramedico-header {
+  background-color: var(--blanco);
+  border-bottom: 1px solid rgba(229, 62, 62, 0.1);
+  width: 100%;
+  margin-top: 4px;
+  box-shadow: var(--sombra);
+}
+
+.paramedico-header-content {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.paramedico-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+/* Logo */
+.paramedico-logo-area {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.paramedico-logo-text img {
+  max-height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Área de usuario */
+.paramedico-user-area {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.paramedico-user-info {
+  text-align: right;
+}
+
+.paramedico-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+}
+
+.paramedico-user-role {
+  font-size: 0.75rem;
+  color: var(--gris-claro);
+  text-align: right;
+}
+
+.paramedico-btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.paramedico-btn-logout:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
+}
+
+/* Título de página */
+.paramedico-page-title {
+  background-color: var(--blanco);
+  border-bottom: 1px solid rgba(229, 62, 62, 0.1);
+  width: 100%;
+}
+
+.paramedico-title-content {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.paramedico-title-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* Contenido principal */
+.paramedico-main {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .paramedico-header-content {
+    padding: 1rem;
+  }
+  
+  .paramedico-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .paramedico-user-area {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .paramedico-logo-text img {
+    max-height: 50px;
+  }
+  
+  .paramedico-main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .paramedico-logo-text img {
+    max-height: 45px;
+  }
+  
+  .paramedico-user-name {
+    font-size: 0.85rem;
+  }
+  
+  .paramedico-user-role {
+    font-size: 0.7rem;
+  }
+  
+  .paramedico-btn-logout {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .paramedico-title-content h2 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .paramedico-logo-text img {
+    max-height: 38px;
+  }
+  
+  .paramedico-user-name {
+    font-size: 0.8rem;
+  }
+  
+  .paramedico-user-role {
+    font-size: 0.65rem;
+  }
+  
+  .paramedico-btn-logout {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+  }
+  
+  .paramedico-title-content h2 {
+    font-size: 1.2rem;
+  }
+  
+  .paramedico-main {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .paramedico-logo-text img {
+    max-height: 32px;
+  }
+  
+  .paramedico-user-area {
+    gap: 0.75rem;
+  }
+  
+  .paramedico-btn-logout span:first-child {
+    display: none;
+  }
+  
+  .paramedico-btn-logout {
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .paramedico-btn-logout {
+    transition: none;
+  }
+  
+  .paramedico-btn-logout:hover {
+    transform: none;
+  }
+}

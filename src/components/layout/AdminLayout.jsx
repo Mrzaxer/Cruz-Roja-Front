@@ -1,11 +1,18 @@
+/**
+ * @component AdminLayout
+ * @description Layout principal para el panel de administración.
+ */
+
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
-import '../../styles/admin.css'
+import { useNavigate, useLocation } from 'react-router-dom'
+import '../../styles/AdminLayout.css'
+import firmaInst from '../../assets/imagenes/firmainst.png'
 
 export default function AdminLayout({ children, titulo, subtitulo }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const currentPath = window.location.pathname
+  const location = useLocation()
+  const currentPath = location.pathname
 
   const handleLogout = () => {
     logout()
@@ -17,33 +24,35 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
     { nombre: 'Sedes', icono: '🏢', path: '/admin/sedes' },
     { nombre: 'Usuarios', icono: '👥', path: '/admin/usuarios' },
     { nombre: 'Ambulancias', icono: '🚑', path: '/admin/ambulancias' },
-    { nombre: 'Insumos', icono: '💊', path: '/admin/insumos' },
+    { nombre: 'Insumos', icono: '💉', path: '/admin/insumos' },
+    { nombre: 'Equipo', icono: '🧰', path: '/admin/equipo' },
     { nombre: 'Reportes', icono: '📈', path: '/admin/reportes' },
   ]
 
   return (
-    <div className="admin-container">
+    <div className="admin-layout-container">
       <div className="admin-top-bar"></div>
 
       <header className="admin-header">
         <div className="admin-header-content">
-          <div className="header-top">
-            <div className="logo-area">
-              <div className="admin-logo">
-                <span>⛑️</span>
-              </div>
-              <div className="logo-text">
-                <h1>CRUZ ROJA</h1>
-                <p>COSTARRICENSE - ADMIN</p>
+          <div className="admin-header-top">
+            <div className="admin-logo-area">
+              <div className="admin-logo-text">
+                <img 
+                  src={firmaInst} 
+                  alt="Firma institucional Cruz Roja Mexicana" 
+                  className="admin-firma-img"
+                  loading="lazy"
+                />
               </div>
             </div>
 
-            <div className="user-area">
-              <div className="user-info">
-                <p className="name">{user?.nombre || 'Administrador Sistema'}</p>
-                <p className="role">Administrador</p>
+            <div className="admin-user-area">
+              <div className="admin-user-info">
+                <p className="admin-user-name">{user?.nombre || 'Administrador'}</p>
+                <p className="admin-user-role">Administrador</p>
               </div>
-              <button onClick={handleLogout} className="btn-logout">
+              <button onClick={handleLogout} className="admin-btn-logout">
                 <span>🚪</span>
                 <span>Cerrar Sesión</span>
               </button>
@@ -55,22 +64,28 @@ export default function AdminLayout({ children, titulo, subtitulo }) {
               <a
                 key={item.path}
                 href={item.path}
-                className={`nav-item ${currentPath === item.path ? 'active' : 'inactive'}`}
+                className={`admin-nav-item ${currentPath === item.path ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  navigate(item.path)
+                }}
               >
-                <span>{item.icono}</span>
-                <span>{item.nombre}</span>
+                <span className="nav-icon">{item.icono}</span>
+                <span className="nav-text">{item.nombre}</span>
               </a>
             ))}
           </nav>
         </div>
       </header>
 
-      <main className="admin-main">
-        <div className="page-header">
+      <div className="admin-page-title">
+        <div className="admin-title-content">
           <h2>{titulo}</h2>
-          {subtitulo && <p>{subtitulo}</p>}
+          {subtitulo && <p className="admin-subtitulo">{subtitulo}</p>}
         </div>
+      </div>
 
+      <main className="admin-main">
         {children}
       </main>
     </div>

@@ -1,20 +1,23 @@
 /**
- * @component GestionAmbulancias
- * @description CRUD completo para la gestión de ambulancias:
- *              - Listado de ambulancias con su sede asignada
- *              - Crear, editar y eliminar ambulancias
+ * @component SubadminAmbulancias
+ * @description CRUD completo para la gestión de ambulancias por sede (subadministrador).
+ *              - Listado de ambulancias de la sede del subadmin
+ *              - Crear nuevas ambulancias (asignadas automáticamente a su sede)
+ *              - Editar ambulancias existentes
+ *              - Eliminar ambulancias (con confirmación)
  *              - Control de estados (Activa, Inactiva, Mantenimiento)
  * @returns {JSX.Element}
  */
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
-import AdminLayout from '../layout/AdminLayout'
+import { useAuth } from '../../context/AuthContext'
+import SubadminLayout from '../layout/SubadminLayout'
 
-export default function GestionAmbulancias() {
+export default function SubadminAmbulancias() {
   // ===== ESTADOS =====
+  const { user } = useAuth()
   const [ambulancias, setAmbulancias] = useState([])
-  const [sedes, setSedes] = useState([])
   const [cargando, setCargando] = useState(true)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [ambulanciaEditando, setAmbulanciaEditando] = useState(null)
@@ -24,25 +27,25 @@ export default function GestionAmbulancias() {
     codigo: '',
     descripcion: '',
     placa: '',
-    estado: 'ACTIVA',
-    sede_id: ''
+    estado: 'ACTIVA'
   })
 
   // ===== CARGA INICIAL =====
   useEffect(() => {
-    cargarDatos()
-  }, [])
+    if (user?.sede_id) cargarAmbulancias()
+  }, [user])
 
   /**
-   * Carga ambulancias y sedes desde Supabase
+   * Carga las ambulancias de la sede del subadministrador
    */
-  const cargarDatos = async () => {
-    const [ambulanciasRes, sedesRes] = await Promise.all([
-      supabase.from('ambulancias').select('*, sedes(nombre)').order('codigo'),
-      supabase.from('sedes').select('*').order('nombre')
-    ])
-    setAmbulancias(ambulanciasRes.data || [])
-    setSedes(sedesRes.data || [])
+  const cargarAmbulancias = async () => {
+    const { data } = await supabase
+      .from('ambulancias')
+      .select('*')
+      .eq('sede_id', user.sede_id)
+      .order('codigo')
+
+    setAmbulancias(data || [])
     setCargando(false)
   }
 
@@ -54,40 +57,44 @@ export default function GestionAmbulancias() {
     e.preventDefault()
     
     if (ambulanciaEditando) {
-      await supabase.from('ambulancias').update(formData).eq('id', ambulanciaEditando.id)
+      await supabase
+        .from('ambulancias')
+        .update(formData)
+        .eq('id', ambulanciaEditando.id)
     } else {
-      await supabase.from('ambulancias').insert([formData])
+      await supabase
+        .from('ambulancias')
+        .insert([{ ...formData, sede_id: user.sede_id }])
     }
     
     cerrarModal()
-    cargarDatos()
-  }
-
-  /**
-   * Elimina una ambulancia
-   * @param {number} id - ID de la ambulancia
-   */
-  const eliminarAmbulancia = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar esta ambulancia?')) return
-    
-    await supabase.from('ambulancias').delete().eq('id', id)
-    cargarDatos()
+    cargarAmbulancias()
   }
 
   /**
    * Abre el modal para editar una ambulancia
    * @param {Object} ambulancia - Datos de la ambulancia a editar
    */
-  const abrirModalEditar = (ambulancia) => {
+  const handleEditar = (ambulancia) => {
     setAmbulanciaEditando(ambulancia)
     setFormData({
       codigo: ambulancia.codigo,
       descripcion: ambulancia.descripcion || '',
       placa: ambulancia.placa || '',
-      estado: ambulancia.estado,
-      sede_id: ambulancia.sede_id || ''
+      estado: ambulancia.estado
     })
     setModalAbierto(true)
+  }
+
+  /**
+   * Elimina una ambulancia previa confirmación
+   * @param {number} id - ID de la ambulancia a eliminar
+   */
+  const handleEliminar = async (id) => {
+    if (confirm('¿Estás seguro de eliminar esta ambulancia?')) {
+      await supabase.from('ambulancias').delete().eq('id', id)
+      cargarAmbulancias()
+    }
   }
 
   /**
@@ -95,22 +102,17 @@ export default function GestionAmbulancias() {
    */
   const abrirModalNuevo = () => {
     setAmbulanciaEditando(null)
-    setFormData({
-      codigo: '',
-      descripcion: '',
-      placa: '',
-      estado: 'ACTIVA',
-      sede_id: ''
-    })
+    setFormData({ codigo: '', descripcion: '', placa: '', estado: 'ACTIVA' })
     setModalAbierto(true)
   }
 
   /**
-   * Cierra el modal y limpia el estado
+   * Cierra el modal y limpia los estados
    */
   const cerrarModal = () => {
     setModalAbierto(false)
     setAmbulanciaEditando(null)
+    setFormData({ codigo: '', descripcion: '', placa: '', estado: 'ACTIVA' })
   }
 
   /**
@@ -121,11 +123,11 @@ export default function GestionAmbulancias() {
   const getEstadoStyle = (estado) => {
     switch(estado) {
       case 'ACTIVA': 
-        return { bg: '#dcfce7', color: '#166534', text: '✅ Activa' }
+        return { bg: '#dcfce7', color: '#166534', text: 'Activa' }
       case 'INACTIVA': 
-        return { bg: '#fee2e2', color: '#991b1b', text: '❌ Inactiva' }
+        return { bg: '#fee2e2', color: '#991b1b', text: 'Inactiva' }
       case 'MANTENIMIENTO': 
-        return { bg: '#fef9c3', color: '#854d0e', text: '🔧 Mantenimiento' }
+        return { bg: '#fef9c3', color: '#854d0e', text: 'Mantenimiento' }
       default: 
         return { bg: '#f3f4f6', color: '#4b5563', text: estado }
     }
@@ -134,21 +136,21 @@ export default function GestionAmbulancias() {
   // ===== RENDER =====
   if (cargando) {
     return (
-      <AdminLayout titulo="Gestión de Ambulancias">
+      <SubadminLayout titulo="Gestión de Ambulancias">
         <div className="loading-container">
           <div className="loading-spinner">
             <span>⟳</span>
             <p>Cargando ambulancias...</p>
           </div>
         </div>
-      </AdminLayout>
+      </SubadminLayout>
     )
   }
 
   return (
-    <AdminLayout 
+    <SubadminLayout 
       titulo="Gestión de Ambulancias"
-      subtitulo="Control de flotilla de ambulancias"
+      subtitulo={`Ambulancias de ${user?.sedes?.nombre || 'tu sede'}`}
     >
       <div className="crud-container">
         <div className="crud-header">
@@ -166,12 +168,11 @@ export default function GestionAmbulancias() {
                 <th>Placa</th>
                 <th>Descripción</th>
                 <th>Estado</th>
-                <th>Sede</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {ambulancias.map((amb) => {
+              {ambulancias.map(amb => {
                 const estadoStyle = getEstadoStyle(amb.estado)
                 return (
                   <tr key={amb.id}>
@@ -188,17 +189,16 @@ export default function GestionAmbulancias() {
                         {estadoStyle.text}
                       </span>
                     </td>
-                    <td>{amb.sedes?.nombre || 'Sin sede'}</td>
                     <td className="acciones">
                       <button 
                         className="btn-edit"
-                        onClick={() => abrirModalEditar(amb)}
+                        onClick={() => handleEditar(amb)}
                       >
                         ✏️ Editar
                       </button>
                       <button 
                         className="btn-delete"
-                        onClick={() => eliminarAmbulancia(amb.id)}
+                        onClick={() => handleEliminar(amb.id)}
                       >
                         🗑️ Eliminar
                       </button>
@@ -215,15 +215,19 @@ export default function GestionAmbulancias() {
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>{ambulanciaEditando ? '✏️ Editar Ambulancia' : '➕ Nueva Ambulancia'}</h3>
+            <div className="modal-header">
+              <span>{ambulanciaEditando ? '' : ''}</span>
+              <h3>{ambulanciaEditando ? 'Editar Ambulancia' : 'Nueva Ambulancia'}</h3>
+              <button className="modal-close" onClick={cerrarModal}>×</button>
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Código de ambulancia *</label>
+                <label>Código *</label>
                 <input
                   type="text"
                   value={formData.codigo}
                   onChange={(e) => setFormData({...formData, codigo: e.target.value})}
-                  placeholder="Ej: SJ-001"
+                  placeholder="Ej: GDL-001"
                   required
                 />
               </div>
@@ -234,7 +238,7 @@ export default function GestionAmbulancias() {
                   type="text"
                   value={formData.placa}
                   onChange={(e) => setFormData({...formData, placa: e.target.value})}
-                  placeholder="Ej: ABC-123"
+                  placeholder="Ej: JNC-45A"
                 />
               </div>
               
@@ -260,20 +264,6 @@ export default function GestionAmbulancias() {
                 </select>
               </div>
               
-              <div className="form-group">
-                <label>Sede *</label>
-                <select
-                  value={formData.sede_id}
-                  onChange={(e) => setFormData({...formData, sede_id: e.target.value})}
-                  required
-                >
-                  <option value="">Seleccione una sede</option>
-                  {sedes.map(sede => (
-                    <option key={sede.id} value={sede.id}>{sede.nombre}</option>
-                  ))}
-                </select>
-              </div>
-              
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={cerrarModal}>
                   Cancelar
@@ -286,6 +276,6 @@ export default function GestionAmbulancias() {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </SubadminLayout>
   )
 }

@@ -1,0 +1,21 @@
+{
+  "name": "Cruz Roja Mexicana - Gestión de Ambulancias",
+  "short_name": "Cruz Roja",
+  "description": "Sistema de gestión de ambulancias y guardias",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#b22222",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
