@@ -38,7 +38,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
           alignItems: 'center'
         }}
       >
-        ⛑️ Cargando...
+        Cargando...
       </div>
     )
   }

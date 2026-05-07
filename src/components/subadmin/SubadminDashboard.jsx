@@ -13,7 +13,7 @@ import { supabase } from "../../supabase"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigate } from "react-router-dom"
 import SubadminLayout from "../layout/SubadminLayout"
-import "../../styles/SubadminDashboard.css"
+import "../../styles/subadmindashboard.css"
 
 export default function SubadminDashboard() {
   const { user } = useAuth()
